@@ -1,16 +1,30 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+// Importação do Mailchimp Transactional
+const mailchimpFactory = require('@mailchimp/mailchimp_transactional');
 
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
-  private readonly API_URL = 'https://api.hotmobile.com.br/Email/EnviarEmailChamados';
+  private mailchimp: any;
 
-  // Injetamos o HttpService para fazer a requisição POST
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  // --- MÉTODOS PÚBLICOS (Mantidos IGUAIS para compatibilidade) ---
+  async onModuleInit() {
+    try {
+      const apiKey = this.configService.get<string>('MAILCHIMP_API_KEY');
+      this.mailchimp = mailchimpFactory(apiKey);
+
+      // Validação da conexão
+      const response = await this.mailchimp.users.ping();
+      this.logger.log(`🚀 Mailchimp Transactional pronto: ${response}`);
+    } catch (error) {
+      this.logger.error('❌ Falha ao conectar no Mailchimp. Verifique a MAILCHIMP_API_KEY.');
+    }
+  }
+
+  // --- MÉTODOS PÚBLICOS (Mantendo a compatibilidade com seu código anterior) ---
 
   async enviarAvisoInicioAtendimento(emailDestino: string, nomeEmpresa: string, linkAcompanhamento: string) {
     const corpoHtml = `
@@ -18,7 +32,7 @@ export class MailService {
           <h2 style="color: #1976d2;">Olá, ${nomeEmpresa}!</h2>
           <p>Temos boas notícias. Um de nossos técnicos iniciou o atendimento.</p>
           <div style="margin: 25px 0;">
-            <a href="${linkAcompanhamento}" style="background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            <a href="${linkAcompanhamento}" style="background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
               Acompanhar Chamado
             </a>
           </div>
@@ -27,7 +41,6 @@ export class MailService {
           <p>Atenciosamente,<br><strong>Equipe Hotmobile</strong></p>
         </div>
       `;
-    // Chama o novo método base
     return this.enviarEmailBase(emailDestino, '🚀 Seu chamado iniciou o atendimento!', corpoHtml);
   }
 
@@ -39,7 +52,7 @@ export class MailService {
         
         ${linkAcao ? `
         <div style="margin: 25px 0;">
-          <a href="${linkAcao}" style="background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+          <a href="${linkAcao}" style="background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
             Ver Chamado
           </a>
         </div>
@@ -54,41 +67,32 @@ export class MailService {
     return this.enviarEmailBase(emailDestino, assunto, corpoHtml);
   }
 
-  // --- NOVO MÉTODO DE ENVIO VIA API HOTMOBILE ---
+  // --- MÉTODO PRIVADO DE DISPARO (AGORA VIA MAILCHIMP) ---
   private async enviarEmailBase(emailDestino: string, assunto: string, html: string) {
-    
-    // Monta o body exatamente como a API pede
-    const payload = {
-      html: html,
-      dataEnvio: new Date().toISOString(), // Data atual em formato string
-      agendada: false, // False para enviar agora
-      quemMandaNome: "Suporte Hotmobile",
-      quemMandaEmail: "caique.menezes@hotmobile.com.br", // Ajuste conforme necessário
-      assuntoEmail: assunto,
-      listEmails: [
-        {
-          email: emailDestino
-        }
-      ]
-    };
-
     try {
-      this.logger.debug(`📧 Disparando via API Hotmobile para: ${emailDestino}`);
+      this.logger.debug(`📧 Enviando via Mailchimp para: ${emailDestino}`);
 
-      // Faz o POST usando HttpService e converte o Observable para Promise
-      const response = await firstValueFrom(
-        this.httpService.post(this.API_URL, payload)
-      );
-// 👇 ADICIONE ESTE LOG PARA VER O QUE A API DISSE
-      this.logger.warn(`🔍 RESPOSTA DA API: ${JSON.stringify(response.data)}`);
-      this.logger.log(`✅ Email enviado com sucesso! Status: ${response.status}`);
-      return response.data;
+      const response = await this.mailchimp.messages.send({
+        message: {
+          from_email: "caique.menezes@hotmobile.com.br", // Seu e-mail verificado no Mailchimp
+          from_name: "Suporte Hotmobile",
+          subject: assunto,
+          html: html,
+          to: [
+            {
+              email: emailDestino,
+              type: 'to',
+            },
+          ],
+        },
+      });
+
+      this.logger.log(`✅ Email enviado com sucesso via Mailchimp!`);
+      return response;
 
     } catch (error) {
-      // Tratamento de erro detalhado para Axios
-      const status = error.response?.status;
-      const data = error.response?.data;
-      this.logger.error(`❌ Erro ao enviar email via API Hotmobile. Status: ${status}`, data);
+      this.logger.error(`❌ Erro ao disparar email via Mailchimp: ${error.message}`);
+      throw error;
     }
   }
 }
