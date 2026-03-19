@@ -11,6 +11,10 @@ export class CreateProjetoDto {
   tipoProjeto: string;
 
   @IsString()
+  @IsNotEmpty()
+  nomeProjeto: string;
+
+  @IsString()
   @IsOptional()
   descricao?: string;
 

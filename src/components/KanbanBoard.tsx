@@ -18,7 +18,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EditIcon from '@mui/icons-material/Edit'; 
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MicIcon from '@mui/icons-material/Mic'; // 👈 IMPORTANTE: Ícone de Microfone
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 // 🟢 NOVOS IMPORTS PARA O SLA
 import AccessTimeIcon from '@mui/icons-material/AccessTime'; 
 import WarningIcon from '@mui/icons-material/Warning';       
@@ -612,13 +612,40 @@ export default function KanbanBoardView() {
   }, [chamadoSelecionado]);
 
   return (
-    <Box sx={{ p: 3, height: '90vh', bgcolor: 'background.default', display: 'flex', flexDirection: 'column', marginTop: 5}}>
+    <Box
+      sx={{
+        p: 3,
+        minHeight: '90vh',
+        display: 'flex',
+        flexDirection: 'column',
+        marginTop: 5,
+        background: isDark
+          ? 'linear-gradient(140deg, #1d1f2f 0%, #1b2335 45%, #242433 100%)'
+          : 'linear-gradient(140deg, #f3f7ff 0%, #eef7ff 45%, #fff5ee 100%)',
+      }}
+    >
       
       {/* CABEÇALHO */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-          Fila de Chamados
-        </Typography>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 2,
+          borderRadius: 3,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
+          background: alpha(theme.palette.background.paper, 0.88),
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary' }}>
+            Operacao de Chamados
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Painel de atendimento com filtros, SLA e distribuicao por responsavel.
+          </Typography>
+        </Box>
 
         <Box display="flex" gap={2}>
           <Button variant="outlined" color="primary" startIcon={<LinkIcon />} onClick={() => setModalLinksOpen(true)}>Links Úteis</Button>
@@ -630,6 +657,7 @@ export default function KanbanBoardView() {
           <ToggleThemeButton />
         </Box>
       </Box>
+      </Paper>
 
       {/* PAINEL DE FILTROS */}
       {mostrarFiltros && (

@@ -70,6 +70,7 @@ model Chamado {
 model Projeto {
   id           Int      @id @default(autoincrement())
   nomeEmpresa  String
+  nomeProjeto  String   @default("Projeto sem nome")
   tipoProjeto  String
   descricao    String
   status       StatusProjeto @default(NOVO)
@@ -155,4 +156,3 @@ model RespostaPronta {
 
   @@map("respostas_prontas")
 }
-

@@ -4,6 +4,7 @@ import {
   Get,
   Delete,
   Body,
+  Query,
   UploadedFiles,
   UseInterceptors,
   UsePipes,
@@ -56,6 +57,12 @@ export class ProjetosController {
   @Get()
   async findAll() {
     return this.projetosService.findAll();
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('dashboard/metrics')
+  async getMetrics(@Query('start') start?: string, @Query('end') end?: string) {
+    return this.projetosService.getDashboardMetrics(start, end);
   }
 
   @UseGuards(AuthGuard('jwt'))

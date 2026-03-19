@@ -44,6 +44,11 @@ export default function LoadingButtonsTransition({ formData, setFormData }) {
       return;
     }
 
+    if (formData.tipoSolicitacao === 'PROJETO' && !formData.nomeProjeto) {
+      toast.warning('Por favor, informe o nome do projeto.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -54,6 +59,7 @@ export default function LoadingButtonsTransition({ formData, setFormData }) {
       if (formData.tipoSolicitacao === 'CHAMADO') {
         dataToSend.append('servico', formData.servico);
       } else {
+        dataToSend.append('nomeProjeto', formData.nomeProjeto);
         dataToSend.append('tipoProjeto', formData.tipoProjeto);
       }
 
@@ -71,7 +77,7 @@ export default function LoadingButtonsTransition({ formData, setFormData }) {
         fallbackPayload.append('servico', `Projeto - ${formData.tipoProjeto}`);
         fallbackPayload.set(
           'descricao',
-          `[Projeto] ${formData.tipoProjeto}\n${formData.descricao || 'Solicitação de novo projeto.'}`,
+          `[Projeto] ${formData.nomeProjeto} (${formData.tipoProjeto})\n${formData.descricao || 'Solicitacao de novo projeto.'}`,
         );
 
         await axios.post(`${API_URL}/chamados`, fallbackPayload);
@@ -86,6 +92,7 @@ export default function LoadingButtonsTransition({ formData, setFormData }) {
         email: [''],
         telefone: [''],
         servico: '',
+        nomeProjeto: '',
         tipoProjeto: '',
         descricao: '',
         anexos: [],

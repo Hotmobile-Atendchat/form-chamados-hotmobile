@@ -57,6 +57,7 @@ export default function MultilineTextFields() {
     email: [''],
     telefone: [''],
     servico: '',
+    nomeProjeto: '',
     tipoProjeto: '',
     descricao: '',
     anexos: [],
@@ -96,6 +97,7 @@ export default function MultilineTextFields() {
       ...prev,
       tipoSolicitacao: newValue,
       servico: newValue === 'CHAMADO' ? prev.servico : '',
+      nomeProjeto: newValue === 'PROJETO' ? prev.nomeProjeto : '',
       tipoProjeto: newValue === 'PROJETO' ? prev.tipoProjeto : '',
     }));
   };
@@ -255,6 +257,18 @@ export default function MultilineTextFields() {
                 }}
               />
             </Grid>
+
+            {isProjeto && (
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Nome do projeto"
+                  value={formData.nomeProjeto}
+                  onChange={handleChange('nomeProjeto')}
+                  fullWidth
+                  placeholder="Ex: Implantacao IA Comercial"
+                />
+              </Grid>
+            )}
 
             <Grid item xs={12} sm={6}>
               {isProjeto ? (
