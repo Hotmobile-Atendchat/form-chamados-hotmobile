@@ -526,6 +526,14 @@ export default function ProjectBoard() {
         </DialogContent>
         <DialogActions>
           <Button color="error" onClick={() => setConfirmDeleteOpen(true)}>Excluir</Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (projetoSelecionado?.id) navigate(`/admin/projetos/${projetoSelecionado.id}`);
+            }}
+          >
+            Ver Detalhes
+          </Button>
           <Button onClick={() => { setProjetoSelecionado(null); limparFormTarefa(); limparFormSprint(); }}>Fechar</Button>
         </DialogActions>
       </Dialog>

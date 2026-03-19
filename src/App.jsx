@@ -9,6 +9,7 @@ import LogoHeader from './components/LogoHeader';
 import KanbanBoardView from './components/KanbanBoard';
 import DashboardView from './components/DashboardView';
 import ProjectBoard from './components/ProjectBoard';
+import ProjectDetailView from './components/ProjectDetailView';
 import LoginView from './components/LoginView'; 
 import PrivateRoute from './components/PrivateRoute'; 
 import ClientTracking from './components/ClientTracking'; 
@@ -89,6 +90,15 @@ export default function App() {
                     element={
                       <PrivateRoute>
                         <div style={{ width: '100%', height: 'auto' }}><ProjectBoard /></div>
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/admin/projetos/:id"
+                    element={
+                      <PrivateRoute>
+                        <div style={{ width: '100%', height: 'auto' }}><ProjectDetailView /></div>
                       </PrivateRoute>
                     }
                   />
