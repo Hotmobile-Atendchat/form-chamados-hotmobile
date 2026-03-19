@@ -2,7 +2,8 @@ import * as React from 'react';
 import {
   Box, Grid, TextField, Button, InputAdornment, useMediaQuery, useTheme,
   Typography, Avatar, Divider, Dialog, DialogTitle, DialogContent,
-  DialogContentText, DialogActions, Chip
+  DialogContentText, DialogActions, Chip, ToggleButtonGroup, ToggleButton,
+  FormControl, InputLabel, Select, MenuItem
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
@@ -24,10 +25,12 @@ export default function MultilineTextFields() {
   const [openWarning, setOpenWarning] = React.useState(false);
   
   const [formData, setFormData] = React.useState({
+    tipoSolicitacao: 'CHAMADO',
     nome: '',
     email: [''],
     telefone: [''],
     servico: '',
+    tipoProjeto: '',
     descricao: '',
     anexos: [] 
   });
@@ -58,6 +61,16 @@ export default function MultilineTextFields() {
     }
   };
 
+  const handleTipoSolicitacaoChange = (event, newValue) => {
+    if (!newValue) return;
+    setFormData((prev) => ({
+      ...prev,
+      tipoSolicitacao: newValue,
+      servico: newValue === 'CHAMADO' ? prev.servico : '',
+      tipoProjeto: newValue === 'PROJETO' ? prev.tipoProjeto : '',
+    }));
+  };
+
   const scrollToTop = () => { topRef.current?.scrollIntoView({ behavior: 'smooth' }); };
   const handleAddField = (field) => { setFormData((prev) => ({ ...prev, [field]: [...prev[field], ''] })); setTimeout(scrollToTop, 100); };
   const handleRemoveField = (field, index) => { setFormData((prev) => { const upd = [...prev[field]]; upd.splice(index, 1); return { ...prev, [field]: upd }; }); };
@@ -80,13 +93,28 @@ export default function MultilineTextFields() {
 
           <Box sx={{ mb: 4, textAlign: 'center' }}>
             <Avatar sx={{ m: '0 auto', bgcolor: 'primary.main', width: 56, height: 56, mb: 2 }}><SupportAgentIcon fontSize="large" /></Avatar>
-            <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: '#333' }}>Abertura de Chamados</Typography>
+            <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: '#333' }}>Abertura de Chamados e Projetos</Typography>
             <Typography variant="subtitle1" sx={{ color: 'primary.main', fontWeight: 'medium' }}>Hotmobile</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Preencha os dados abaixo para solicitar atendimento técnico.</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Preencha os dados abaixo para abrir um chamado ou iniciar um projeto.</Typography>
             <Divider sx={{ mt: 3 }} />
           </Box>
 
           <Grid container spacing={2}>
+
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                <Typography variant="subtitle2" color="text.secondary">Tipo de solicitação</Typography>
+                <ToggleButtonGroup
+                  value={formData.tipoSolicitacao}
+                  exclusive
+                  onChange={handleTipoSolicitacaoChange}
+                  size="small"
+                >
+                  <ToggleButton value="CHAMADO">Chamado</ToggleButton>
+                  <ToggleButton value="PROJETO">Projeto</ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+            </Grid>
             
             {/* LINHA 1: Empresa e Serviço (Lado a Lado no Desktop) */}
             <Grid item xs={12} sm={6}>
@@ -94,8 +122,24 @@ export default function MultilineTextFields() {
             </Grid>
             <Grid item xs={12} sm={6}>
                <Box sx={{ width: '100%' }}>
-                 {/* Garante que o Select ocupe 100% da largura da coluna */}
-                 <MultipleSelectCheckmarks value={formData.servico} onChange={handleChange('servico')} sx={{ width: '100%' }} />
+                 {formData.tipoSolicitacao === 'CHAMADO' ? (
+                   <MultipleSelectCheckmarks value={formData.servico} onChange={handleChange('servico')} sx={{ width: '100%' }} />
+                 ) : (
+                   <FormControl fullWidth>
+                     <InputLabel id="tipo-projeto-label">Tipo de Projeto</InputLabel>
+                     <Select
+                       labelId="tipo-projeto-label"
+                       value={formData.tipoProjeto}
+                       label="Tipo de Projeto"
+                       onChange={handleChange('tipoProjeto')}
+                     >
+                       <MenuItem value="IntegraÃ§Ã£o">IntegraÃ§Ã£o</MenuItem>
+                       <MenuItem value="AutomaÃ§Ã£o">AutomaÃ§Ã£o</MenuItem>
+                       <MenuItem value="Agente de IA">Agente de IA</MenuItem>
+                       <MenuItem value="Outro">Outro</MenuItem>
+                     </Select>
+                   </FormControl>
+                 )}
                </Box>
             </Grid>
 
@@ -127,7 +171,7 @@ export default function MultilineTextFields() {
 
             {/* LINHA 3: Descrição */}
             <Grid item xs={12}>
-              <TextField label="Descrição" value={formData.descricao} onChange={handleChange('descricao')} multiline rows={4} fullWidth placeholder="Descreva o chamado ou necessidade" sx={{ mt: 2 }} />
+              <TextField label="Descrição" value={formData.descricao} onChange={handleChange('descricao')} multiline rows={4} fullWidth placeholder="Descreva o chamado ou o projeto" sx={{ mt: 2 }} />
               
               <Box sx={{ mt: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                 <InputFileUpload onChange={handleFileChange} accept=".jpg,.jpeg,.png,.pdf" />

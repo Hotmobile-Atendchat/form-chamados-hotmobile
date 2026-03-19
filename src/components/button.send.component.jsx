@@ -11,8 +11,18 @@ const API_URL =  'https://form-chamados-hotmobile-production.up.railway.app';
 
  const handleClick = async () => {
     // 1. Validação
-    if (!formData.nome || !formData.servico) {
-      toast.warning('Por favor, preencha o nome da empresa e o serviço.');
+    if (!formData.nome) {
+      toast.warning('Por favor, preencha o nome da empresa.');
+      return;
+    }
+
+    if (formData.tipoSolicitacao === 'CHAMADO' && !formData.servico) {
+      toast.warning('Por favor, selecione o serviço.');
+      return;
+    }
+
+    if (formData.tipoSolicitacao === 'PROJETO' && !formData.tipoProjeto) {
+      toast.warning('Por favor, selecione o tipo de projeto.');
       return;
     }
 
@@ -22,7 +32,14 @@ const API_URL =  'https://form-chamados-hotmobile-production.up.railway.app';
       const dataToSend = new FormData();
 
       dataToSend.append('nome', formData.nome);
-      dataToSend.append('servico', formData.servico);
+      dataToSend.append('tipoSolicitacao', formData.tipoSolicitacao);
+
+      if (formData.tipoSolicitacao === 'CHAMADO') {
+        dataToSend.append('servico', formData.servico);
+      } else {
+        dataToSend.append('tipoProjeto', formData.tipoProjeto);
+      }
+
       dataToSend.append('descricao', formData.descricao);
 
       formData.email.forEach(email => {
@@ -39,27 +56,29 @@ const API_URL =  'https://form-chamados-hotmobile-production.up.railway.app';
         });
       }
 
-      console.log('📦 Enviando para o Backend...');
+      console.log('Enviando para o Backend...');
 
-      // 👇 CORREÇÃO AQUI: (Crase + Cifrão + Chaves)
-      const response = await axios.post(`${API_URL}/chamados`, dataToSend);
+      const endpoint = formData.tipoSolicitacao === 'PROJETO' ? 'projetos' : 'chamados';
+      const response = await axios.post(`${API_URL}/${endpoint}`, dataToSend);
 
-      console.log('✅ Sucesso:', response.data);
+      console.log('Sucesso:', response.data);
 
       setFormData({
+        tipoSolicitacao: 'CHAMADO',
         nome: '',
         email: [''],
         telefone: [''],
         servico: '',
+        tipoProjeto: '',
         descricao: '',
         anexos: null, 
       });
 
-      toast.success('Chamado aberto com sucesso!');
+      toast.success(formData.tipoSolicitacao === 'PROJETO' ? 'Projeto aberto com sucesso!' : 'Chamado aberto com sucesso!');
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-      console.error('❌ Erro:', error);
+      console.error('Erro:', error);
       const mensagemErro = error.response?.data?.message || 'Erro ao enviar chamado.';
       
       if (Array.isArray(mensagemErro)) {

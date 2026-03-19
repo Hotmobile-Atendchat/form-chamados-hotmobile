@@ -17,6 +17,14 @@ enum StatusChamado {
   FINALIZADO
 }
 
+enum StatusProjeto {
+  NOVO
+  PLANEJAMENTO
+  EM_EXECUCAO
+  VALIDACAO
+  FINALIZADO
+}
+
 enum TipoAutor {
   CLIENTE
   SUPORTE
@@ -57,6 +65,23 @@ model Chamado {
   anexos    Anexo[]
   interacoes  Interacao[]
   @@map("chamados")
+}
+
+model Projeto {
+  id           Int      @id @default(autoincrement())
+  nomeEmpresa  String
+  tipoProjeto  String
+  descricao    String
+  status       StatusProjeto @default(NOVO)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  responsavel  String?
+  responsavelCor String?
+  emails       String[]
+  telefones    String[]
+  anexos       Json?
+
+  @@map("projetos")
 }
 
 model Email {
@@ -130,5 +155,4 @@ model RespostaPronta {
 
   @@map("respostas_prontas")
 }
-
 
