@@ -1,49 +1,69 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 import { IconButton, Box, Typography } from '@mui/material';
 import { Mic, Stop, Delete, CheckCircle } from '@mui/icons-material';
 
-export default function AudioRecorder({ onAudioReady }) {
-  const { status, startRecording, stopRecording, mediaBlobUrl, clearBlobUrl } = useReactMediaRecorder({ 
+type AudioRecorderProps = {
+  onAudioReady: (file: File) => void;
+  compact?: boolean;
+};
+
+export default function AudioRecorder({ onAudioReady, compact = false }: AudioRecorderProps) {
+  const { status, startRecording, stopRecording, mediaBlobUrl, clearBlobUrl } = useReactMediaRecorder({
     audio: true,
-    blobPropertyBag: { type: "audio/webm" } // Formato padrão web otimizado
+    blobPropertyBag: { type: 'audio/webm' },
   });
 
-  // Converte o Blob URL em um objeto File compatível com seu formulário
   const handleSave = async () => {
     if (!mediaBlobUrl) return;
 
     try {
       const response = await fetch(mediaBlobUrl);
       const blob = await response.blob();
-      
-      // Cria um nome de arquivo único
-      const fileName = `audio-gravado-${new Date().getTime()}.webm`;
-      const file = new File([blob], fileName, { type: "audio/webm" });
-
-      // Envia para o componente pai
+      const fileName = `audio-gravado-${Date.now()}.webm`;
+      const file = new File([blob], fileName, { type: 'audio/webm' });
       onAudioReady(file);
-      clearBlobUrl(); // Limpa para nova gravação
+      clearBlobUrl();
     } catch (error) {
-      console.error("Erro ao processar áudio", error);
+      console.error('Erro ao processar audio', error);
     }
   };
 
+  const actionIconSx = compact
+    ? {
+        width: 34,
+        height: 34,
+        borderRadius: 2.5,
+        border: '1px solid',
+        borderColor: 'rgba(25,118,210,0.25)',
+        bgcolor: 'background.paper',
+      }
+    : {};
+
   return (
-    <Box display="flex" alignItems="center" gap={1} sx={{ border: '1px dashed #ccc', borderRadius: 2, p: 1, width: 'fit-content' }}>
-      
+    <Box
+      display="flex"
+      alignItems="center"
+      gap={1}
+      sx={{
+        border: compact ? 'none' : '1px dashed #ccc',
+        borderRadius: compact ? 0 : 2,
+        p: compact ? 0 : 1,
+        width: 'fit-content',
+      }}
+    >
       {status !== 'recording' && !mediaBlobUrl && (
-        <IconButton color="primary" onClick={startRecording} title="Gravar Áudio">
+        <IconButton color="primary" onClick={startRecording} title="Gravar audio" sx={actionIconSx}>
           <Mic />
         </IconButton>
       )}
 
       {status === 'recording' && (
         <>
-          <Typography variant="caption" sx={{ color: 'red', fontWeight: 'bold', animation: 'pulse 1s infinite' }}>
+          <Typography variant="caption" sx={{ color: 'red', fontWeight: 'bold' }}>
             Gravando...
           </Typography>
-          <IconButton color="error" onClick={stopRecording}>
+          <IconButton color="error" onClick={stopRecording} sx={actionIconSx}>
             <Stop />
           </IconButton>
         </>
@@ -52,12 +72,10 @@ export default function AudioRecorder({ onAudioReady }) {
       {status === 'stopped' && mediaBlobUrl && (
         <>
           <audio src={mediaBlobUrl} controls style={{ height: 30, width: 200 }} />
-          
-          <IconButton color="success" onClick={handleSave} title="Confirmar Áudio">
+          <IconButton color="success" onClick={handleSave} title="Confirmar audio" sx={actionIconSx}>
             <CheckCircle />
           </IconButton>
-          
-          <IconButton color="default" onClick={clearBlobUrl} title="Descartar">
+          <IconButton color="default" onClick={clearBlobUrl} title="Descartar" sx={actionIconSx}>
             <Delete />
           </IconButton>
         </>

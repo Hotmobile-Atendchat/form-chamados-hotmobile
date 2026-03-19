@@ -14,12 +14,15 @@ import {
   Param,
   ParseIntPipe,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { ProjetosService } from '../services/projetos.service';
 import { CreateProjetoDto } from '../dtos/create-projeto.dto';
 import { UpdateProjetoStatusDto } from '../dtos/update-projeto-status.dto';
+import { CreateProjetoTarefaDto } from '../dtos/create-projeto-tarefa.dto';
+import { UpdateProjetoTarefaDto } from '../dtos/update-projeto-tarefa.dto';
 
 @Controller('projetos')
 export class ProjetosController {
@@ -63,6 +66,37 @@ export class ProjetosController {
   @Get('dashboard/metrics')
   async getMetrics(@Query('start') start?: string, @Query('end') end?: string) {
     return this.projetosService.getDashboardMetrics(start, end);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/tarefas')
+  async createTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: CreateProjetoTarefaDto,
+    @Req() req: any,
+  ) {
+    const rawUserId = req.user?.userId || req.user?.sub || req.user?.id;
+    const userId = Number(rawUserId);
+    return this.projetosService.createTask(id, body, Number.isFinite(userId) ? userId : undefined);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id/tarefas/:taskId')
+  async updateTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Body() body: UpdateProjetoTarefaDto,
+  ) {
+    return this.projetosService.updateTask(id, taskId, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id/tarefas/:taskId')
+  async deleteTask(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+  ) {
+    return this.projetosService.deleteTask(id, taskId);
   }
 
   @UseGuards(AuthGuard('jwt'))

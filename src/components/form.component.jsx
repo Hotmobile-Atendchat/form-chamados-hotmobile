@@ -4,6 +4,7 @@ import {
   Grid,
   TextField,
   Button,
+  IconButton,
   InputAdornment,
   Typography,
   Avatar,
@@ -64,6 +65,20 @@ export default function MultilineTextFields() {
   });
 
   const isProjeto = formData.tipoSolicitacao === 'PROJETO';
+  const sharedFieldSx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 3,
+      backgroundColor: alpha('#ffffff', 0.98),
+      transition: 'all 0.2s ease',
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: alpha(theme.palette.primary.main, 0.5),
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: theme.palette.primary.main,
+        borderWidth: '1.5px',
+      },
+    },
+  };
 
   const handleAudioRecorded = (audioFile) => {
     setFormData((prev) => ({ ...prev, anexos: [...(prev.anexos || []), audioFile] }));
@@ -248,6 +263,7 @@ export default function MultilineTextFields() {
                 value={formData.nome}
                 onChange={handleChange('nome')}
                 fullWidth
+                sx={sharedFieldSx}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -266,19 +282,21 @@ export default function MultilineTextFields() {
                   onChange={handleChange('nomeProjeto')}
                   fullWidth
                   placeholder="Ex: Implantacao IA Comercial"
+                  sx={sharedFieldSx}
                 />
               </Grid>
             )}
 
             <Grid item xs={12} sm={6}>
               {isProjeto ? (
-                <FormControl fullWidth>
+                <FormControl fullWidth sx={sharedFieldSx}>
                   <InputLabel id="tipo-projeto-label">Tipo de projeto</InputLabel>
                   <Select
                     labelId="tipo-projeto-label"
                     value={formData.tipoProjeto}
                     label="Tipo de projeto"
                     onChange={handleChange('tipoProjeto')}
+                    sx={{ borderRadius: 3 }}
                   >
                     {PROJECT_TYPES.map((projectType) => (
                       <MenuItem key={projectType.value} value={projectType.value}>
@@ -300,37 +318,30 @@ export default function MultilineTextFields() {
 
             <Grid item xs={12} sm={6}>
               {formData.telefone.map((tel, index) => (
-                <Grid
-                  container
-                  spacing={1}
-                  key={index}
-                  alignItems="center"
-                  sx={{ mb: index === formData.telefone.length - 1 ? 0 : 1.4 }}
-                >
-                  <Grid item xs={index > 0 ? 10 : 12}>
-                    <TextField
-                      label={`Telefone ${index + 1}`}
-                      value={tel}
-                      onChange={handleChange('telefone', index)}
-                      fullWidth
-                      placeholder="(11) 99999-9999"
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <PhoneIcon fontSize="small" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-                  {index > 0 && (
-                    <Grid item xs={2}>
-                      <Button onClick={() => handleRemoveField('telefone', index)} color="error" fullWidth>
-                        <DeleteIcon />
-                      </Button>
-                    </Grid>
-                  )}
-                </Grid>
+                <Box key={index} sx={{ mb: index === formData.telefone.length - 1 ? 0 : 1.4 }}>
+                  <TextField
+                    label={`Telefone ${index + 1}`}
+                    value={tel}
+                    onChange={handleChange('telefone', index)}
+                    fullWidth
+                    placeholder="(11) 99999-9999"
+                    sx={sharedFieldSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PhoneIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: index > 0 ? (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => handleRemoveField('telefone', index)} color="error" size="small">
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ) : null,
+                    }}
+                  />
+                </Box>
               ))}
               <Button onClick={() => handleAddField('telefone')} size="small" sx={{ mt: 1, textTransform: 'none' }}>
                 + Adicionar telefone
@@ -339,36 +350,29 @@ export default function MultilineTextFields() {
 
             <Grid item xs={12} sm={6}>
               {formData.email.map((email, index) => (
-                <Grid
-                  container
-                  spacing={1}
-                  key={index}
-                  alignItems="center"
-                  sx={{ mb: index === formData.email.length - 1 ? 0 : 1.4 }}
-                >
-                  <Grid item xs={index > 0 ? 10 : 12}>
-                    <TextField
-                      label={`E-mail ${index + 1}`}
-                      value={email}
-                      onChange={handleChange('email', index)}
-                      fullWidth
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <EmailIcon fontSize="small" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </Grid>
-                  {index > 0 && (
-                    <Grid item xs={2}>
-                      <Button onClick={() => handleRemoveField('email', index)} color="error" fullWidth>
-                        <DeleteIcon />
-                      </Button>
-                    </Grid>
-                  )}
-                </Grid>
+                <Box key={index} sx={{ mb: index === formData.email.length - 1 ? 0 : 1.4 }}>
+                  <TextField
+                    label={`E-mail ${index + 1}`}
+                    value={email}
+                    onChange={handleChange('email', index)}
+                    fullWidth
+                    sx={sharedFieldSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <EmailIcon fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      endAdornment: index > 0 ? (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => handleRemoveField('email', index)} color="error" size="small">
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ) : null,
+                    }}
+                  />
+                </Box>
               ))}
               <Button onClick={() => handleAddField('email')} size="small" sx={{ mt: 1, textTransform: 'none' }}>
                 + Adicionar e-mail
@@ -387,7 +391,7 @@ export default function MultilineTextFields() {
                 rows={4}
                 fullWidth
                 placeholder={isProjeto ? 'Descreva objetivo, escopo e prazo desejado.' : 'Descreva o problema e o impacto no seu atendimento.'}
-                sx={{ mt: 1 }}
+                sx={{ mt: 1, ...sharedFieldSx }}
               />
             </Grid>
 
@@ -423,7 +427,17 @@ export default function MultilineTextFields() {
         </Paper>
       </Box>
 
-      <Dialog open={openWarning} onClose={() => setOpenWarning(false)}>
+      <Dialog
+        open={openWarning}
+        onClose={() => setOpenWarning(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            border: '1px solid rgba(25, 118, 210, 0.14)',
+            boxShadow: '0 24px 60px rgba(20, 44, 90, 0.22)',
+          },
+        }}
+      >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#ed6c02' }}>
           <WarningAmberRoundedIcon />
           Tipo inv\u00e1lido

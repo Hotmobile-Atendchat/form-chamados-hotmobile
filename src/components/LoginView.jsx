@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   Box, Paper, Typography, TextField, Button, Avatar, Container 
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,20 @@ export default function LoginView() {
   const [password, setPassword] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const sharedFieldSx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 3,
+      backgroundColor: alpha('#ffffff', 0.98),
+      transition: 'all 0.2s ease',
+      '&:hover .MuiOutlinedInput-notchedOutline': {
+        borderColor: alpha('#1976d2', 0.5),
+      },
+      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+        borderColor: '#1976d2',
+        borderWidth: '1.5px',
+      },
+    },
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +73,7 @@ export default function LoginView() {
             autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            sx={sharedFieldSx}
           />
           <TextField
             margin="normal"
@@ -68,13 +84,14 @@ export default function LoginView() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            sx={sharedFieldSx}
           />
           
           <Button
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2, py: 1.5 }}
+            sx={{ mt: 3, mb: 2, py: 1.2, borderRadius: 2.5, textTransform: 'none', fontWeight: 700 }}
           >
             Entrar
           </Button>

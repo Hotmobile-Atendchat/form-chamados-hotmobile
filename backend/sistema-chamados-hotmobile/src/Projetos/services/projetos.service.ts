@@ -5,7 +5,9 @@ import { MailService } from 'src/Ticket/services/mail.service';
 import * as storageInterface from 'src/Ticket/services/storage.interface';
 import { WhatsappService } from 'src/Ticket/services/whatsapp.service';
 import { CreateProjetoDto } from '../dtos/create-projeto.dto';
+import { CreateProjetoTarefaDto } from '../dtos/create-projeto-tarefa.dto';
 import { UpdateProjetoStatusDto } from '../dtos/update-projeto-status.dto';
+import { UpdateProjetoTarefaDto } from '../dtos/update-projeto-tarefa.dto';
 
 const STATUS_LABELS: Record<string, string> = {
   NOVO: 'Novo',
@@ -51,6 +53,7 @@ export class ProjetosService {
         telefones: data.telefones || [],
         anexos: anexosData.length > 0 ? anexosData : undefined,
       },
+      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
     });
 
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -87,6 +90,7 @@ export class ProjetosService {
         ...(dto.responsavel && { responsavel: dto.responsavel }),
         ...(dto.responsavelCor && { responsavelCor: dto.responsavelCor }),
       },
+      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
     });
 
     if (dto.status) {
@@ -115,14 +119,73 @@ export class ProjetosService {
     return projetoAtualizado;
   }
 
+  async createTask(projetoId: number, dto: CreateProjetoTarefaDto, userId?: number) {
+    await this.prisma.projeto.findUniqueOrThrow({ where: { id: projetoId } });
+
+    const autorUser = userId
+      ? await this.prisma.usuario.findUnique({
+          where: { id: userId },
+          select: { nome: true },
+        })
+      : null;
+
+    const tarefa = await this.prisma.projetoTarefa.create({
+      data: {
+        projetoId,
+        titulo: dto.titulo,
+        descricao: dto.descricao,
+        sprint: dto.sprint,
+        autor: autorUser?.nome || 'Usuario',
+        responsavel: dto.responsavel,
+        responsavelCor: dto.responsavelCor,
+      },
+    });
+
+    return tarefa;
+  }
+
+  async updateTask(projetoId: number, taskId: number, dto: UpdateProjetoTarefaDto) {
+    const tarefa = await this.prisma.projetoTarefa.findFirstOrThrow({
+      where: { id: taskId, projetoId },
+      select: { id: true },
+    });
+
+    return this.prisma.projetoTarefa.update({
+      where: { id: tarefa.id },
+      data: {
+        ...(dto.titulo !== undefined && { titulo: dto.titulo }),
+        ...(dto.descricao !== undefined && { descricao: dto.descricao }),
+        ...(dto.sprint !== undefined && { sprint: dto.sprint }),
+        ...(dto.status !== undefined && { status: dto.status as any }),
+        ...(dto.responsavel !== undefined && { responsavel: dto.responsavel }),
+        ...(dto.responsavelCor !== undefined && { responsavelCor: dto.responsavelCor }),
+      },
+    });
+  }
+
+  async deleteTask(projetoId: number, taskId: number) {
+    const tarefa = await this.prisma.projetoTarefa.findFirstOrThrow({
+      where: { id: taskId, projetoId },
+      select: { id: true },
+    });
+
+    return this.prisma.projetoTarefa.delete({
+      where: { id: tarefa.id },
+    });
+  }
+
   async findAll() {
     return this.prisma.projeto.findMany({
+      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: number) {
-    return this.prisma.projeto.findUnique({ where: { id } });
+    return this.prisma.projeto.findUnique({
+      where: { id },
+      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
+    });
   }
 
   async remove(id: number) {
@@ -139,6 +202,7 @@ export class ProjetosService {
       where: {
         createdAt: { gte: startDate, lte: endDate },
       },
+      include: { tarefas: true },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -150,12 +214,18 @@ export class ProjetosService {
     const tipoCount: Record<string, number> = {};
     const timelineCount: Record<string, number> = {};
 
+    let totalTarefas = 0;
+    let tarefasConcluidas = 0;
+
     projetos.forEach((projeto) => {
       statusCount[projeto.status] = (statusCount[projeto.status] || 0) + 1;
       tipoCount[projeto.tipoProjeto] = (tipoCount[projeto.tipoProjeto] || 0) + 1;
 
       const dateKey = new Date(projeto.createdAt).toISOString().split('T')[0];
       timelineCount[dateKey] = (timelineCount[dateKey] || 0) + 1;
+
+      totalTarefas += projeto.tarefas?.length || 0;
+      tarefasConcluidas += (projeto.tarefas || []).filter((t) => t.status === 'CONCLUIDA').length;
     });
 
     const statusData = Object.entries(statusCount).map(([name, value]) => ({ name, value }));
@@ -173,6 +243,8 @@ export class ProjetosService {
         total,
         finalizados,
         emAndamento,
+        totalTarefas,
+        tarefasConcluidas,
       },
       statusData,
       tipoData,

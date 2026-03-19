@@ -25,6 +25,12 @@ enum StatusProjeto {
   FINALIZADO
 }
 
+enum StatusTarefaProjeto {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+
 enum TipoAutor {
   CLIENTE
   SUPORTE
@@ -81,8 +87,26 @@ model Projeto {
   emails       String[]
   telefones    String[]
   anexos       Json?
+  tarefas      ProjetoTarefa[]
 
   @@map("projetos")
+}
+
+model ProjetoTarefa {
+  id             Int                 @id @default(autoincrement())
+  titulo         String
+  descricao      String?
+  sprint         String?
+  status         StatusTarefaProjeto @default(PENDENTE)
+  autor          String
+  responsavel    String?
+  responsavelCor String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  projetoId      Int
+  projeto        Projeto             @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@map("projeto_tarefas")
 }
 
 model Email {

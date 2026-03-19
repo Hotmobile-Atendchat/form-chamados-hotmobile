@@ -81,12 +81,73 @@ export default function ThemeProviderContext({ children }) {
         MuiOutlinedInput: {
           styleOverrides: {
             root: {
+              borderRadius: 12,
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                 borderColor: isDark ? '#90caf9' : '#1976d2',
               },
             },
             notchedOutline: {
               borderColor: isDark ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+            },
+          },
+        },
+        // Padrao visual moderno para todos os modais
+        MuiDialog: {
+          styleOverrides: {
+            paper: {
+              borderRadius: 22,
+              border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(25, 118, 210, 0.14)',
+              boxShadow: isDark
+                ? '0 24px 60px rgba(0,0,0,0.5)'
+                : '0 24px 60px rgba(20, 44, 90, 0.22)',
+              backgroundImage: 'none',
+            },
+          },
+        },
+        MuiDialogTitle: {
+          styleOverrides: {
+            root: {
+              padding: '18px 22px',
+              fontWeight: 800,
+              letterSpacing: '0.01em',
+            },
+          },
+        },
+        MuiDialogContent: {
+          styleOverrides: {
+            root: {
+              padding: '14px 22px 20px',
+            },
+          },
+        },
+        MuiDialogActions: {
+          styleOverrides: {
+            root: {
+              padding: '12px 18px 18px',
+              gap: 8,
+            },
+          },
+        },
+        MuiButton: {
+          styleOverrides: {
+            root: {
+              borderRadius: 10,
+              textTransform: 'none',
+              fontWeight: 700,
+              letterSpacing: '0.01em',
+              boxShadow: 'none',
+            },
+            contained: {
+              boxShadow: isDark
+                ? '0 10px 22px rgba(0, 0, 0, 0.35)'
+                : '0 10px 22px rgba(25, 118, 210, 0.22)',
+            },
+          },
+        },
+        MuiIconButton: {
+          styleOverrides: {
+            root: {
+              borderRadius: 12,
             },
           },
         },
