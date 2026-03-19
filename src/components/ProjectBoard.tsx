@@ -440,7 +440,22 @@ export default function ProjectBoard() {
       </DragDropContext>
 
       <Dialog open={Boolean(projetoSelecionado)} onClose={() => { setProjetoSelecionado(null); limparFormTarefa(); limparFormSprint(); }} maxWidth="md" fullWidth>
-        <DialogTitle>Projeto #{projetoSelecionado?.id}</DialogTitle>
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center" gap={1} flexWrap="wrap">
+            <Typography variant="h6" fontWeight={700}>
+              Projeto #{projetoSelecionado?.id}
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                if (projetoSelecionado?.id) navigate(`/admin/projetos/${projetoSelecionado.id}`);
+              }}
+            >
+              Ver pagina detalhada
+            </Button>
+          </Box>
+        </DialogTitle>
         <DialogContent dividers>
           <Box mb={2}><Typography variant="subtitle2" color="text.secondary">Nome do Projeto</Typography><Typography variant="h6" fontWeight={800}>{projetoSelecionado?.nomeProjeto}</Typography></Box>
           <Box mb={2}><Typography variant="subtitle2" color="text.secondary">Empresa</Typography><Typography variant="h6" fontWeight="bold" display="flex" alignItems="center" gap={1}><BusinessIcon color="primary" fontSize="small" /> {projetoSelecionado?.nomeEmpresa}</Typography></Box>
