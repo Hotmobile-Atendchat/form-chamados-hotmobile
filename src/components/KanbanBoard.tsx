@@ -640,10 +640,10 @@ export default function KanbanBoardView() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary' }}>
-            Operacao de Chamados
+            Operação de Chamados
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Painel de atendimento com filtros, SLA e distribuicao por responsavel.
+            Painel de atendimento com filtros, SLA e distribuição por responsavel.
           </Typography>
         </Box>
 

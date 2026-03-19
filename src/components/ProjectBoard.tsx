@@ -52,8 +52,8 @@ import ToggleThemeButton from './ToggleThemeButton';
 const PROJECT_COLUMNS = {
   NOVO: { id: 'NOVO', title: 'Backlog', border: '#1e88e5' },
   PLANEJAMENTO: { id: 'PLANEJAMENTO', title: 'Planejamento', border: '#fb8c00' },
-  EM_EXECUCAO: { id: 'EM_EXECUCAO', title: 'Execucao', border: '#43a047' },
-  VALIDACAO: { id: 'VALIDACAO', title: 'Validacao', border: '#8e24aa' },
+  EM_EXECUCAO: { id: 'EM_EXECUCAO', title: 'Execução', border: '#43a047' },
+  VALIDACAO: { id: 'VALIDACAO', title: 'Validação', border: '#8e24aa' },
   FINALIZADO: { id: 'FINALIZADO', title: 'Finalizado', border: '#546e7a' },
 };
 
@@ -382,7 +382,7 @@ export default function ProjectBoard() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 800 }}>Gestao de Projetos</Typography>
-            <Typography variant="body2" color="text.secondary">Pipeline de execucao com sprint e tarefas por projeto.</Typography>
+            <Typography variant="body2" color="text.secondary">Pipeline de execução com sprint e tarefas por projeto.</Typography>
           </Box>
           <Box display="flex" gap={1.5} flexWrap="wrap">
             <Chip icon={<FolderOpenIcon />} label={`Total: ${totalProjetos}`} color="primary" variant="outlined" sx={{ borderRadius: 2.5, height: 38, fontWeight: 700 }} />
