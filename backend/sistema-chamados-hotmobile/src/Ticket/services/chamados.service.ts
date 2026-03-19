@@ -95,18 +95,53 @@ export class ChamadosService {
     // O TypeScript às vezes se perde no 'include', isso força ele a aceitar.
     const chamadoFull = chamadoAtualizado as any;
 
-    // Notificações de Status
+    // Notificacoes de Status
     if (novoStatus === 'EM_ATENDIMENTO' || novoStatus === 'FINALIZADO') {
-        const msg = novoStatus === 'EM_ATENDIMENTO' ? 'Seu chamado entrou em atendimento.' : 'Seu chamado foi finalizado.';
-        
-        if (chamadoFull.telefones?.length > 0) {
-             chamadoFull.telefones.forEach((tel: any) => 
-                this.whatsappService.enviarMensagem(tel.numero, msg).catch(()=>{})
-             );
-        }
-        
-        // Exemplo para email também se quiser descomentar:
-        // if (chamadoFull.emails?.length > 0) { ... }
+      const msg =
+        novoStatus === 'EM_ATENDIMENTO'
+          ? 'Seu chamado entrou em atendimento.'
+          : 'Seu chamado foi finalizado.';
+
+      if (chamadoFull.telefones?.length > 0) {
+        chamadoFull.telefones.forEach((tel: any) => {
+          if (novoStatus === 'EM_ATENDIMENTO') {
+            this.whatsappService
+              .enviarAvisoInicioAtendimento(
+                tel.numero,
+                chamadoAtualizado.nomeEmpresa,
+                linkFrontend,
+              )
+              .catch(() => {});
+          } else {
+            this.whatsappService
+              .enviarMensagem(tel.numero, `${msg} Acompanhe: ${linkFrontend}`)
+              .catch(() => {});
+          }
+        });
+      }
+
+      if (chamadoFull.emails?.length > 0) {
+        chamadoFull.emails.forEach((email: any) => {
+          if (novoStatus === 'EM_ATENDIMENTO') {
+            this.mailService
+              .enviarAvisoInicioAtendimento(
+                email.endereco,
+                chamadoAtualizado.nomeEmpresa,
+                linkFrontend,
+              )
+              .catch(() => {});
+          } else {
+            this.mailService
+              .enviarNotificacaoGenerica(
+                email.endereco,
+                `Chamado #${chamadoAtualizado.id} Finalizado`,
+                msg,
+                linkFrontend,
+              )
+              .catch(() => {});
+          }
+        });
+      }
     }
 
     // Se mudou status ou prioridade, avisa o front

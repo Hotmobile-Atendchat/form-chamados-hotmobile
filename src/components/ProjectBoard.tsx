@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { io } from 'socket.io-client';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import ToggleThemeButton from './ToggleThemeButton';
@@ -67,6 +68,8 @@ const SPRINT_STATUS = {
   ATIVA: { label: 'Ativa', color: 'primary' },
   CONCLUIDA: { label: 'Concluida', color: 'success' },
 };
+
+const API_URL = 'https://form-chamados-hotmobile-production.up.railway.app';
 
 function formatDate(value) {
   if (!value) return '-';
@@ -164,6 +167,32 @@ export default function ProjectBoard() {
   useEffect(() => {
     carregarProjetos();
     carregarUsuarios();
+  }, []);
+
+  useEffect(() => {
+    const socket = io(API_URL, { transports: ['websocket', 'polling'], reconnection: true });
+
+    socket.on('novo_projeto', (novoProjeto) => {
+      setProjetos((prev) => {
+        if (prev.some((p) => p.id === novoProjeto.id)) return prev;
+        return [novoProjeto, ...prev];
+      });
+      toast.info(`Novo projeto #${novoProjeto.id} entrou no backlog.`);
+    });
+
+    socket.on('mudanca_status_projeto', (data) => {
+      if (!data?.id || !data?.status) return;
+      setProjetos((prev) =>
+        prev.map((p) => (p.id === data.id ? { ...p, status: data.status } : p)),
+      );
+      setProjetoSelecionado((prev) =>
+        prev && prev.id === data.id ? { ...prev, status: data.status } : prev,
+      );
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const limparFormTarefa = () => {

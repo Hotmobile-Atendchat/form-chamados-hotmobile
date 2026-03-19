@@ -6,6 +6,7 @@ import { SupabaseService } from 'src/supabase/supabase.service';
 import { MailService } from 'src/Ticket/services/mail.service';
 import { WhatsappService } from 'src/Ticket/services/whatsapp.service';
 import { ProjetosController } from '../controllers/projetos.controller';
+import { ProjetosGateway } from '../services/projetos.gateway';
 import { ProjetosService } from '../services/projetos.service';
 
 @Module({
@@ -13,6 +14,7 @@ import { ProjetosService } from '../services/projetos.service';
   controllers: [ProjetosController],
   providers: [
     ProjetosService,
+    ProjetosGateway,
     PrismaService,
     MailService,
     WhatsappService,

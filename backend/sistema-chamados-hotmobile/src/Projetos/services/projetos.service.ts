@@ -10,6 +10,7 @@ import { CreateProjetoTarefaDto } from '../dtos/create-projeto-tarefa.dto';
 import { UpdateProjetoSprintDto } from '../dtos/update-projeto-sprint.dto';
 import { UpdateProjetoStatusDto } from '../dtos/update-projeto-status.dto';
 import { UpdateProjetoTarefaDto } from '../dtos/update-projeto-tarefa.dto';
+import { ProjetosGateway } from './projetos.gateway';
 
 const STATUS_LABELS: Record<string, string> = {
   NOVO: 'Novo',
@@ -25,6 +26,7 @@ export class ProjetosService {
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
     private readonly whatsappService: WhatsappService,
+    private readonly gateway: ProjetosGateway,
     @Inject('STORAGE_SERVICE') private readonly storageService: storageInterface.IStorageService,
   ) {}
 
@@ -86,6 +88,7 @@ export class ProjetosService {
       });
     }
 
+    this.gateway.emitirNovoProjeto(projeto);
     return projeto;
   }
 
@@ -121,6 +124,10 @@ export class ProjetosService {
             .catch(() => {});
         });
       }
+    }
+
+    if (dto.status) {
+      this.gateway.emitirMudancaStatusProjeto(id, dto.status);
     }
 
     return projetoAtualizado;
