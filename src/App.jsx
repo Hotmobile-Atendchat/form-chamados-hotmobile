@@ -29,7 +29,8 @@ export default function App() {
       <AuthProvider>
       <div
         style={{
-          height: '100vh',
+          minHeight: '100vh',
+          height: 'auto',
           width: '100vw',
           display: 'flex',
           flexDirection: 'column',
@@ -39,7 +40,8 @@ export default function App() {
           
           // ✅ CORREÇÃO AQUI: Mudei de 'hidden' para 'auto'
           // 'auto' só mostra a barra de rolagem se o conteúdo for maior que a tela
-          overflow: 'auto', 
+          overflowX: 'hidden',
+          overflowY: 'visible',
           
           backgroundColor: 'inherit',
         }}

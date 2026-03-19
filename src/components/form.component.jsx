@@ -178,8 +178,7 @@ export default function MultilineTextFields() {
             backdropFilter: 'blur(8px)',
             width: '100%',
             maxWidth: '860px',
-            overflowY: 'auto',
-            maxHeight: '88vh',
+            overflow: 'visible',
           }}
           onSubmit={(e) => e.preventDefault()}
           noValidate
