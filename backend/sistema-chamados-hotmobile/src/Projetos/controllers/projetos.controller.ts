@@ -20,7 +20,9 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { ProjetosService } from '../services/projetos.service';
 import { CreateProjetoDto } from '../dtos/create-projeto.dto';
+import { CreateProjetoSprintDto } from '../dtos/create-projeto-sprint.dto';
 import { UpdateProjetoStatusDto } from '../dtos/update-projeto-status.dto';
+import { UpdateProjetoSprintDto } from '../dtos/update-projeto-sprint.dto';
 import { CreateProjetoTarefaDto } from '../dtos/create-projeto-tarefa.dto';
 import { UpdateProjetoTarefaDto } from '../dtos/update-projeto-tarefa.dto';
 
@@ -66,6 +68,34 @@ export class ProjetosController {
   @Get('dashboard/metrics')
   async getMetrics(@Query('start') start?: string, @Query('end') end?: string) {
     return this.projetosService.getDashboardMetrics(start, end);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/sprints')
+  async createSprint(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: CreateProjetoSprintDto,
+  ) {
+    return this.projetosService.createSprint(id, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':id/sprints/:sprintId')
+  async updateSprint(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('sprintId', ParseIntPipe) sprintId: number,
+    @Body() body: UpdateProjetoSprintDto,
+  ) {
+    return this.projetosService.updateSprint(id, sprintId, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id/sprints/:sprintId')
+  async deleteSprint(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('sprintId', ParseIntPipe) sprintId: number,
+  ) {
+    return this.projetosService.deleteSprint(id, sprintId);
   }
 
   @UseGuards(AuthGuard('jwt'))

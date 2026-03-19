@@ -1,4 +1,5 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProjetoTarefaDto {
   @IsString()
@@ -9,9 +10,10 @@ export class UpdateProjetoTarefaDto {
   @IsOptional()
   descricao?: string;
 
-  @IsString()
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
-  sprint?: string;
+  sprintId?: number;
 
   @IsString()
   @IsIn(['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDA'])

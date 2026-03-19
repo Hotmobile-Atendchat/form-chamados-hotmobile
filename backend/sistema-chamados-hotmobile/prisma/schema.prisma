@@ -31,6 +31,12 @@ enum StatusTarefaProjeto {
   CONCLUIDA
 }
 
+enum StatusSprintProjeto {
+  PLANEJADA
+  ATIVA
+  CONCLUIDA
+}
+
 enum TipoAutor {
   CLIENTE
   SUPORTE
@@ -88,15 +94,30 @@ model Projeto {
   telefones    String[]
   anexos       Json?
   tarefas      ProjetoTarefa[]
+  sprints      ProjetoSprint[]
 
   @@map("projetos")
+}
+
+model ProjetoSprint {
+  id         Int                 @id @default(autoincrement())
+  nome       String
+  dataInicio DateTime
+  dataFim    DateTime
+  status     StatusSprintProjeto @default(PLANEJADA)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  projetoId  Int
+  projeto    Projeto             @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  tarefas    ProjetoTarefa[]
+
+  @@map("projeto_sprints")
 }
 
 model ProjetoTarefa {
   id             Int                 @id @default(autoincrement())
   titulo         String
   descricao      String?
-  sprint         String?
   status         StatusTarefaProjeto @default(PENDENTE)
   autor          String
   responsavel    String?
@@ -105,6 +126,8 @@ model ProjetoTarefa {
   updatedAt      DateTime            @updatedAt
   projetoId      Int
   projeto        Projeto             @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  sprintId       Int?
+  sprintRef      ProjetoSprint?      @relation(fields: [sprintId], references: [id], onDelete: SetNull)
 
   @@map("projeto_tarefas")
 }

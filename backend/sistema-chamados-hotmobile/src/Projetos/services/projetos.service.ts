@@ -5,7 +5,9 @@ import { MailService } from 'src/Ticket/services/mail.service';
 import * as storageInterface from 'src/Ticket/services/storage.interface';
 import { WhatsappService } from 'src/Ticket/services/whatsapp.service';
 import { CreateProjetoDto } from '../dtos/create-projeto.dto';
+import { CreateProjetoSprintDto } from '../dtos/create-projeto-sprint.dto';
 import { CreateProjetoTarefaDto } from '../dtos/create-projeto-tarefa.dto';
+import { UpdateProjetoSprintDto } from '../dtos/update-projeto-sprint.dto';
 import { UpdateProjetoStatusDto } from '../dtos/update-projeto-status.dto';
 import { UpdateProjetoTarefaDto } from '../dtos/update-projeto-tarefa.dto';
 
@@ -25,6 +27,11 @@ export class ProjetosService {
     private readonly whatsappService: WhatsappService,
     @Inject('STORAGE_SERVICE') private readonly storageService: storageInterface.IStorageService,
   ) {}
+
+  private projetoInclude = {
+    sprints: { orderBy: { dataInicio: 'asc' as const } },
+    tarefas: { include: { sprintRef: true }, orderBy: { createdAt: 'desc' as const } },
+  };
 
   async create(data: CreateProjetoDto, files: Array<Express.Multer.File>) {
     let anexosData: any[] = [];
@@ -53,7 +60,7 @@ export class ProjetosService {
         telefones: data.telefones || [],
         anexos: anexosData.length > 0 ? anexosData : undefined,
       },
-      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
+      include: this.projetoInclude,
     });
 
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -90,7 +97,7 @@ export class ProjetosService {
         ...(dto.responsavel && { responsavel: dto.responsavel }),
         ...(dto.responsavelCor && { responsavelCor: dto.responsavelCor }),
       },
-      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
+      include: this.projetoInclude,
     });
 
     if (dto.status) {
@@ -121,6 +128,11 @@ export class ProjetosService {
 
   async createTask(projetoId: number, dto: CreateProjetoTarefaDto, userId?: number) {
     await this.prisma.projeto.findUniqueOrThrow({ where: { id: projetoId } });
+    if (dto.sprintId) {
+      await this.prisma.projetoSprint.findFirstOrThrow({
+        where: { id: dto.sprintId, projetoId },
+      });
+    }
 
     const autorUser = userId
       ? await this.prisma.usuario.findUnique({
@@ -134,7 +146,7 @@ export class ProjetosService {
         projetoId,
         titulo: dto.titulo,
         descricao: dto.descricao,
-        sprint: dto.sprint,
+        sprintId: dto.sprintId,
         autor: autorUser?.nome || 'Usuario',
         responsavel: dto.responsavel,
         responsavelCor: dto.responsavelCor,
@@ -150,12 +162,18 @@ export class ProjetosService {
       select: { id: true },
     });
 
+    if (dto.sprintId && dto.sprintId > 0) {
+      await this.prisma.projetoSprint.findFirstOrThrow({
+        where: { id: dto.sprintId, projetoId },
+      });
+    }
+
     return this.prisma.projetoTarefa.update({
       where: { id: tarefa.id },
       data: {
         ...(dto.titulo !== undefined && { titulo: dto.titulo }),
         ...(dto.descricao !== undefined && { descricao: dto.descricao }),
-        ...(dto.sprint !== undefined && { sprint: dto.sprint }),
+        ...(dto.sprintId !== undefined && { sprintId: dto.sprintId > 0 ? dto.sprintId : null }),
         ...(dto.status !== undefined && { status: dto.status as any }),
         ...(dto.responsavel !== undefined && { responsavel: dto.responsavel }),
         ...(dto.responsavelCor !== undefined && { responsavelCor: dto.responsavelCor }),
@@ -174,9 +192,49 @@ export class ProjetosService {
     });
   }
 
+  async createSprint(projetoId: number, dto: CreateProjetoSprintDto) {
+    await this.prisma.projeto.findUniqueOrThrow({ where: { id: projetoId } });
+    return this.prisma.projetoSprint.create({
+      data: {
+        projetoId,
+        nome: dto.nome,
+        dataInicio: new Date(dto.dataInicio),
+        dataFim: new Date(dto.dataFim),
+      },
+    });
+  }
+
+  async updateSprint(projetoId: number, sprintId: number, dto: UpdateProjetoSprintDto) {
+    const sprint = await this.prisma.projetoSprint.findFirstOrThrow({
+      where: { id: sprintId, projetoId },
+      select: { id: true },
+    });
+
+    return this.prisma.projetoSprint.update({
+      where: { id: sprint.id },
+      data: {
+        ...(dto.nome !== undefined && { nome: dto.nome }),
+        ...(dto.dataInicio !== undefined && { dataInicio: new Date(dto.dataInicio) }),
+        ...(dto.dataFim !== undefined && { dataFim: new Date(dto.dataFim) }),
+        ...(dto.status !== undefined && { status: dto.status as any }),
+      },
+    });
+  }
+
+  async deleteSprint(projetoId: number, sprintId: number) {
+    const sprint = await this.prisma.projetoSprint.findFirstOrThrow({
+      where: { id: sprintId, projetoId },
+      select: { id: true },
+    });
+
+    return this.prisma.projetoSprint.delete({
+      where: { id: sprint.id },
+    });
+  }
+
   async findAll() {
     return this.prisma.projeto.findMany({
-      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
+      include: this.projetoInclude,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -184,7 +242,7 @@ export class ProjetosService {
   async findOne(id: number) {
     return this.prisma.projeto.findUnique({
       where: { id },
-      include: { tarefas: { orderBy: { createdAt: 'desc' } } },
+      include: this.projetoInclude,
     });
   }
 
