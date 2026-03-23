@@ -757,7 +757,7 @@ export default function KanbanBoardView() {
                     <Typography variant="caption">#{item.id}</Typography>
                     {/* âœ… MANTIDO: Renderiza Data de CriaÃ§Ã£o */}
                     <Typography variant="caption" color="text.secondary">{new Date(item.createdAt).toLocaleDateString('pt-BR')}</Typography>
-                    {item.responsavel && <Box display="flex" gap={1} bgcolor={item.responsavelCor+'15'} p={0.5} borderRadius={1}><Avatar sx={{ width: 20, height: 20, fontSize: 10, bgcolor: item.responsavelCor }}>{item.responsavel[0]}</Avatar><Typography variant="caption" color={item.responsavelCor}>{item.responsavel}</Typography></Box>}
+                    {item.responsavel && <Box display="flex" gap={1} bgcolor={item.responsavelCor+'15'} p={0.5} borderRadius={1}><Avatar sx={{ width: 20, height: 20, fontSize: 10, bgcolor: item.responsavelCor }}>{String(item.responsavel).charAt(0).toUpperCase()}</Avatar><Typography variant="caption" color={item.responsavelCor}>{item.responsavel}</Typography></Box>}
                 </Box>
                 <Typography variant="subtitle1" fontWeight="bold">{item.nomeEmpresa}</Typography>
 
@@ -941,7 +941,7 @@ export default function KanbanBoardView() {
                                 <li {...props}>
                                     <Box display="flex" alignItems="center" gap={1}>
                                         <Avatar sx={{ width: 24, height: 24, bgcolor: option.cor, fontSize: 12 }}>
-                                            {option.nome?.charAt(0).toUpperCase()}
+                                            {option.nome?.charAt(0)?.toUpperCase() || '?'}
                                         </Avatar>
                                         <Typography variant="body2">{option.nome}</Typography>
                                     </Box>
@@ -966,7 +966,7 @@ export default function KanbanBoardView() {
                                                     fontSize: 12
                                                 }}
                                             >
-                                                {chamadoSelecionado.responsável.charAt(0).toUpperCase()}
+                                                {String(chamadoSelecionado.responsavel || '?').charAt(0).toUpperCase()}
                                             </Avatar>
                                         )
                                     }}
