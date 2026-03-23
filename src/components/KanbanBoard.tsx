@@ -12,7 +12,6 @@ import LockIcon from '@mui/icons-material/Lock';
 import BoltIcon from '@mui/icons-material/Bolt';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import LabelIcon from '@mui/icons-material/Label'; 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SettingsIcon from '@mui/icons-material/Settings'; 
@@ -180,6 +179,7 @@ export default function KanbanBoardView() {
   const [modalLinksOpen, setModalLinksOpen] = useState(false);
   const [chamadoSelecionado, setChamadoSelecionado] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false); 
+  const [isDraggingCard, setIsDraggingCard] = useState(false);
 
   // --- CHAT E ARQUIVOS ---
   const [novoComentario, setNovoComentario] = useState('');
@@ -395,6 +395,15 @@ export default function KanbanBoardView() {
     const novoStatus = destination.droppableId;
     const chamadoId = parseInt(draggableId);
     atualizarStatus(chamadoId, novoStatus);
+  };
+
+  const onDragStart = () => {
+    setIsDraggingCard(true);
+  };
+
+  const onDragEndSafe = async (result) => {
+    await onDragEnd(result);
+    setTimeout(() => setIsDraggingCard(false), 80);
   };
 
   const atualizarStatus = async (id, novoStatus) => {
@@ -718,7 +727,7 @@ export default function KanbanBoardView() {
       )}
 
       {/* KANBAN */}
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEndSafe}>
         <Box sx={{ display: 'flex', gap: 2.5, overflowX: 'auto', flexGrow: 1, pb: 1, minHeight: 0, justifyContent: 'center', width: '100%' }}>{colunasKanban.map(([cid, col]) => { const list = chamadosFiltrados.filter(c => c.status === cid); return (<Droppable key={cid} droppableId={cid}>{(prov, snap) => (<Paper ref={prov.innerRef} {...prov.droppableProps} elevation={0} sx={{ width: 360, minWidth: 360, maxHeight: 'calc(100vh - 280px)', bgcolor: snap.isDraggingOver ? (isDark ? 'rgba(56, 69, 90, 0.75)' : 'rgba(205, 227, 255, 0.7)') : (isDark ? 'rgba(35, 42, 57, 0.88)' : 'rgba(255, 255, 255, 0.9)'), p: 1.5, borderRadius: 4, border: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(19,78,172,0.12)', boxShadow: isDark ? '0 12px 30px rgba(0,0,0,0.35)' : '0 16px 40px rgba(31, 74, 152, 0.12)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}><Box sx={{ mb: 1.5, px: 1, py: 1.2, borderRadius: 3, borderBottom: `3px solid ${col.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(248, 251, 255, 0.95)' }}><Box display="flex" gap={1} color={col.iconColor}>{col.icon}<Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>{col.title}</Typography></Box><Chip label={list.length} size="small"/></Box><Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5 }}>{list.map((item, idx) => (<Draggable key={item.id} draggableId={item.id.toString()} index={idx}>{(p, s) => {
             
             // ðŸŸ¢ LÃ“GICA DO CICLO DE 24H E PRIORIDADE VISUAL
@@ -742,13 +751,13 @@ export default function KanbanBoardView() {
             const estourado = horasAberto >= 24 && item.status !== 'FINALIZADO';
             
             return (
-            <Card ref={p.innerRef} {...p.draggableProps} onClick={() => handleAbrirChamado(item)} sx={{ mb: 1.5, cursor: 'pointer', borderLeft: `5px solid ${configVisual.color}`, borderRadius: 3, boxShadow: estourado ? '0 0 0 2px rgba(211, 47, 47, 0.3)' : (isDark ? 2 : 1), position: 'relative', transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? 4 : 3 } }}>
+            <Card ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps} onClick={() => { if (isDraggingCard) return; handleAbrirChamado(item); }} sx={{ mb: 1.5, cursor: 'pointer', borderLeft: `5px solid ${configVisual.color}`, borderRadius: 3, boxShadow: estourado ? '0 0 0 2px rgba(211, 47, 47, 0.3)' : (isDark ? 2 : 1), position: 'relative', transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? 4 : 3 } }}>
                 <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography variant="caption">#{item.id}</Typography>
                     {/* âœ… MANTIDO: Renderiza Data de CriaÃ§Ã£o */}
                     <Typography variant="caption" color="text.secondary">{new Date(item.createdAt).toLocaleDateString('pt-BR')}</Typography>
-                    {item.responsavel && <Box display="flex" gap={1} bgcolor={item.responsavelCor+'15'} p={0.5} borderRadius={1}><Avatar sx={{ width: 20, height: 20, fontSize: 10, bgcolor: item.responsavelCor }}>{item.responsavel[0]}</Avatar><Typography variant="caption" color={item.responsavelCor}>{item.responsavel}</Typography></Box>}<Box {...p.dragHandleProps} onClick={(e) => e.stopPropagation()} title="Arrastar" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', ml: 0.5, cursor: 'grab' }}><DragIndicatorIcon fontSize="small" /></Box>
+                    {item.responsavel && <Box display="flex" gap={1} bgcolor={item.responsavelCor+'15'} p={0.5} borderRadius={1}><Avatar sx={{ width: 20, height: 20, fontSize: 10, bgcolor: item.responsavelCor }}>{item.responsavel[0]}</Avatar><Typography variant="caption" color={item.responsavelCor}>{item.responsavel}</Typography></Box>}
                 </Box>
                 <Typography variant="subtitle1" fontWeight="bold">{item.nomeEmpresa}</Typography>
 
