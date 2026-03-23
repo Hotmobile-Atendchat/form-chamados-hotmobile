@@ -206,7 +206,7 @@ export default function MultilineTextFields() {
               Hotmobile
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1, maxWidth: 560, mx: 'auto' }}>
-              Abra um chamado tÃ©cnico  ou inicie um projeto de integraÃ§Ã£o, automaÃ§Ã£o ou IA em um fluxo de atendimento.
+              Abra um chamado tecnico  ou inicie um projeto de integração, automação ou IA em um fluxo de atendimento.
             </Typography>
             <Divider sx={{ mt: 2.5 }} />
           </Box>
@@ -221,7 +221,7 @@ export default function MultilineTextFields() {
             }}
           >
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#3e4a67' }}>
-              Tipo de solicitaÃ§Ã£o
+              Tipo de solicitação
             </Typography>
             <ToggleButtonGroup
               value={formData.tipoSolicitacao}
@@ -314,7 +314,7 @@ export default function MultilineTextFields() {
 
             <Grid item xs={12}>
               <Typography variant="overline" sx={{ color: '#5a6b91', letterSpacing: '0.08em', fontWeight: 700 }}>
-                Contatos para atualizaÃ§Ãµes
+                Contatos para atualizações
               </Typography>
             </Grid>
 
