@@ -1,4 +1,4 @@
-import * as React from 'react';
+﻿import * as React from 'react';
 import {
   Box,
   Grid,
@@ -39,6 +39,7 @@ import MultipleSelectCheckmarks from './priority.checkbox.component';
 import LoadingButtonsTransition from './button.send.component';
 import InputFileUpload from './button.file.upload.component';
 import AudioRecorder from './AudioRecorder';
+import ProjectLinksModal from './ProjectLinksModal';
 
 const PROJECT_TYPES = [
   { value: 'Integra\u00e7\u00e3o', label: 'Integra\u00e7\u00e3o' },
@@ -205,7 +206,7 @@ export default function MultilineTextFields() {
               Hotmobile
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1, maxWidth: 560, mx: 'auto' }}>
-              Abra um chamado técnico  ou inicie um projeto de integração, automação ou IA em um fluxo de atendimento.
+              Abra um chamado tÃ©cnico  ou inicie um projeto de integraÃ§Ã£o, automaÃ§Ã£o ou IA em um fluxo de atendimento.
             </Typography>
             <Divider sx={{ mt: 2.5 }} />
           </Box>
@@ -220,7 +221,7 @@ export default function MultilineTextFields() {
             }}
           >
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#3e4a67' }}>
-              Tipo de solicitação
+              Tipo de solicitaÃ§Ã£o
             </Typography>
             <ToggleButtonGroup
               value={formData.tipoSolicitacao}
@@ -273,6 +274,8 @@ export default function MultilineTextFields() {
               />
             </Grid>
 
+            {isProjeto && <ProjectLinksModal />}
+
             {isProjeto && (
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -311,7 +314,7 @@ export default function MultilineTextFields() {
 
             <Grid item xs={12}>
               <Typography variant="overline" sx={{ color: '#5a6b91', letterSpacing: '0.08em', fontWeight: 700 }}>
-                Contatos para atualizações
+                Contatos para atualizaÃ§Ãµes
               </Typography>
             </Grid>
 
@@ -380,10 +383,10 @@ export default function MultilineTextFields() {
 
             <Grid item xs={12}>
               <Typography variant="overline" sx={{ color: '#5a6b91', letterSpacing: '0.08em', fontWeight: 700 }}>
-                Escopo da solicitações
+                Escopo da solicitaÃ§Ãµes
               </Typography>
               <TextField
-                label="Descrição"
+                label="DescriÃ§Ã£o"
                 value={formData.descricao}
                 onChange={handleChange('descricao')}
                 multiline
@@ -453,3 +456,4 @@ export default function MultilineTextFields() {
     </>
   );
 }
+
