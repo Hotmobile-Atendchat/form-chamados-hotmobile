@@ -131,6 +131,14 @@ export default function ProjectBoard() {
   const [busca, setBusca] = useState('');
   const [projetoSelecionado, setProjetoSelecionado] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [modalCriarProjetoInternoOpen, setModalCriarProjetoInternoOpen] = useState(false);
+  const [criandoProjetoInterno, setCriandoProjetoInterno] = useState(false);
+  const [novoProjetoInterno, setNovoProjetoInterno] = useState({
+    nomeEmpresa: 'Hotmobile (Interno)',
+    nomeProjeto: '',
+    tipoProjeto: 'Interno',
+    descricao: '',
+  });
   const [editandoTarefaId, setEditandoTarefaId] = useState(null);
   const [editandoSprintId, setEditandoSprintId] = useState(null);
   const [tarefaForm, setTarefaForm] = useState({ titulo: '', descricao: '', sprintId: '', responsavel: '' });
@@ -305,6 +313,44 @@ export default function ProjectBoard() {
     }
   };
 
+  const limparFormularioProjetoInterno = () => {
+    setNovoProjetoInterno({
+      nomeEmpresa: 'Hotmobile (Interno)',
+      nomeProjeto: '',
+      tipoProjeto: 'Interno',
+      descricao: '',
+    });
+  };
+
+  const handleCriarProjetoInterno = async () => {
+    if (!novoProjetoInterno.nomeEmpresa.trim() || !novoProjetoInterno.nomeProjeto.trim() || !novoProjetoInterno.tipoProjeto.trim()) {
+      toast.warning('Preencha empresa, nome do projeto e tipo.');
+      return;
+    }
+
+    setCriandoProjetoInterno(true);
+    try {
+      const payload = {
+        nome: novoProjetoInterno.nomeEmpresa.trim(),
+        nomeProjeto: novoProjetoInterno.nomeProjeto.trim(),
+        tipoProjeto: novoProjetoInterno.tipoProjeto.trim(),
+        descricao: novoProjetoInterno.descricao?.trim() || '',
+        emails: [],
+        telefones: [],
+      };
+
+      const { data } = await api.post('/projetos', payload);
+      await carregarProjetos();
+      setModalCriarProjetoInternoOpen(false);
+      limparFormularioProjetoInterno();
+      toast.success(`Projeto interno #${data?.id || ''} criado com sucesso.`);
+    } catch {
+      toast.error('Erro ao criar projeto interno.');
+    } finally {
+      setCriandoProjetoInterno(false);
+    }
+  };
+
   const handleToggleStatusSprint = async (sprint) => {
     if (!projetoSelecionado) return;
     const prox = sprint.status === 'CONCLUIDA' ? 'ATIVA' : 'CONCLUIDA';
@@ -387,6 +433,7 @@ export default function ProjectBoard() {
           <Box display="flex" gap={1.5} flexWrap="wrap">
             <Chip icon={<FolderOpenIcon />} label={`Total: ${totalProjetos}`} color="primary" variant="outlined" sx={{ borderRadius: 2.5, height: 38, fontWeight: 700 }} />
             <Chip icon={<AssignmentTurnedInIcon />} label={`Finalizados: ${totalFinalizados}`} color="success" variant="outlined" sx={{ borderRadius: 2.5, height: 38, fontWeight: 700 }} />
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => setModalCriarProjetoInternoOpen(true)} sx={{ borderRadius: 2.5, height: 38, px: 2, textTransform: 'none', fontWeight: 700 }}>Novo Projeto Interno</Button>
             <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate('/admin')} sx={{ borderRadius: 2.5, height: 38, px: 2, textTransform: 'none', fontWeight: 700 }}>Chamados</Button>
             <Button variant="outlined" color="error" startIcon={<LogoutIcon />} onClick={() => { logout(); navigate('/login'); }} sx={{ borderRadius: 2.5, height: 38, px: 2, textTransform: 'none', fontWeight: 700 }}>Sair</Button>
             <ToggleThemeButton />
@@ -559,6 +606,50 @@ export default function ProjectBoard() {
         <DialogActions>
           <Button onClick={() => setConfirmDeleteOpen(false)}>Cancelar</Button>
           <Button onClick={handleDeleteProjeto} variant="contained" color="error">Sim, Excluir</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={modalCriarProjetoInternoOpen} onClose={() => { if (!criandoProjetoInterno) setModalCriarProjetoInternoOpen(false); }} maxWidth="sm" fullWidth>
+        <DialogTitle>Novo Projeto Interno</DialogTitle>
+        <DialogContent dividers>
+          <Box display="flex" flexDirection="column" gap={1.2}>
+            <TextField
+              label="Empresa/Area"
+              value={novoProjetoInterno.nomeEmpresa}
+              onChange={(e) => setNovoProjetoInterno((prev) => ({ ...prev, nomeEmpresa: e.target.value }))}
+              size="small"
+              fullWidth
+            />
+            <TextField
+              label="Nome do projeto"
+              value={novoProjetoInterno.nomeProjeto}
+              onChange={(e) => setNovoProjetoInterno((prev) => ({ ...prev, nomeProjeto: e.target.value }))}
+              size="small"
+              fullWidth
+            />
+            <TextField
+              label="Tipo do projeto"
+              value={novoProjetoInterno.tipoProjeto}
+              onChange={(e) => setNovoProjetoInterno((prev) => ({ ...prev, tipoProjeto: e.target.value }))}
+              size="small"
+              fullWidth
+            />
+            <TextField
+              label="Descricao"
+              value={novoProjetoInterno.descricao}
+              onChange={(e) => setNovoProjetoInterno((prev) => ({ ...prev, descricao: e.target.value }))}
+              size="small"
+              multiline
+              rows={3}
+              fullWidth
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setModalCriarProjetoInternoOpen(false); limparFormularioProjetoInterno(); }} disabled={criandoProjetoInterno}>Cancelar</Button>
+          <Button onClick={handleCriarProjetoInterno} variant="contained" disabled={criandoProjetoInterno}>
+            {criandoProjetoInterno ? 'Criando...' : 'Criar Projeto'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

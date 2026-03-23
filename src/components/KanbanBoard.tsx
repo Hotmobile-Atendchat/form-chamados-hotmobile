@@ -26,6 +26,9 @@ import WarningIcon from '@mui/icons-material/Warning';
 
 import { 
   AttachFile as AttachIcon,
+  History as HistoryIcon,
+  AutoDelete as AutoDeleteIcon,
+  RestoreFromTrash as RestoreFromTrashIcon,
   Business as BusinessIcon,
   Search as SearchIcon,
   Email as EmailIcon,
@@ -104,6 +107,7 @@ const TAG_COLORS = [
 
 const FLOW_ORDER = ['NOVO', 'EM_ATENDIMENTO', 'FINALIZADO'];
 const API_URL = 'https://form-chamados-hotmobile-production.up.railway.app';
+const KANBAN_HIDE_FINALIZADOS_KEY = 'kanban_ocultar_finalizados';
 
 // LINKS ÚTEIS
 const SUPORTE_LINKS = [
@@ -162,6 +166,10 @@ export default function KanbanBoardView() {
   const [filtroTags, setFiltroTags] = useState([]);
   const [mostrarFiltros, setMostrarFiltros] = useState(false); 
   const [modalPerfilOpen, setModalPerfilOpen] = useState(false);
+  const [ocultarFinalizados, setOcultarFinalizados] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(KANBAN_HIDE_FINALIZADOS_KEY) === '1';
+  });
 
   // 🟢 ESTADOS DO SLA (MODAL E MONITORAMENTO)
   const [modalSlaOpen, setModalSlaOpen] = useState(false);
@@ -505,6 +513,10 @@ export default function KanbanBoardView() {
   const responsaveisUnicos = [...new Set(chamados.map(c => c.responsavel).filter(Boolean))];
 
   const chamadosFiltrados = chamados.filter((c) => {
+    if (ocultarFinalizados && c.status === 'FINALIZADO') {
+      return false;
+    }
+
     const termo = busca.toLowerCase();
     const matchTexto = 
       c.nomeEmpresa.toLowerCase().includes(termo) ||
@@ -530,6 +542,10 @@ export default function KanbanBoardView() {
     return matchTexto && matchStatus && matchNaoLidos && matchResponsavel && matchTags && matchData;
   });
 
+  const colunasKanban = ocultarFinalizados
+    ? Object.entries(COLUMNS).filter(([cid]) => cid !== 'FINALIZADO')
+    : Object.entries(COLUMNS);
+
   const limparFiltros = () => {
       setBusca('');
       setFiltroStatus(Object.keys(COLUMNS));
@@ -539,6 +555,23 @@ export default function KanbanBoardView() {
       setFiltroDataFim('');
       setApenasNaoLidos(false);
   };
+
+  const handleLimparFinalizadosKanban = () => {
+    setOcultarFinalizados(true);
+    setFiltroStatus((prev) => prev.filter((status) => status !== 'FINALIZADO'));
+    toast.success('Chamados finalizados ocultados do kanban. Consulte no historico.');
+  };
+
+  const handleRestaurarFinalizadosKanban = () => {
+    setOcultarFinalizados(false);
+    setFiltroStatus((prev) => (prev.includes('FINALIZADO') ? prev : [...prev, 'FINALIZADO']));
+    toast.info('Chamados finalizados voltaram para o kanban.');
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(KANBAN_HIDE_FINALIZADOS_KEY, ocultarFinalizados ? '1' : '0');
+  }, [ocultarFinalizados]);
 
   useEffect(() => {
     const socket = io(API_URL, { transports: ['websocket', 'polling'], reconnection: true });
@@ -649,6 +682,12 @@ export default function KanbanBoardView() {
 
         <Box display="flex" gap={2}>
           <Button variant="outlined" color="primary" startIcon={<LinkIcon />} onClick={() => setModalLinksOpen(true)}>Links Úteis</Button>
+          <Button variant="outlined" color="secondary" startIcon={<HistoryIcon />} onClick={() => navigate('/admin/chamados/historico')}>Historico</Button>
+          {ocultarFinalizados ? (
+            <Button variant="outlined" color="inherit" startIcon={<RestoreFromTrashIcon />} onClick={handleRestaurarFinalizadosKanban}>Restaurar Finalizados</Button>
+          ) : (
+            <Button variant="outlined" color="warning" startIcon={<AutoDeleteIcon />} onClick={handleLimparFinalizadosKanban}>Limpar Finalizados</Button>
+          )}
           <Button variant={mostrarFiltros ? "contained" : "outlined"} onClick={() => setMostrarFiltros(!mostrarFiltros)} startIcon={<FilterListIcon />}>Filtros</Button>
           <Button variant="contained" color="secondary" startIcon={<BarChartIcon />} onClick={() => navigate('/dashboard')}>Relatórios</Button>
           <Button variant="contained" color="primary" startIcon={<ListAlt />} onClick={() => navigate('/admin/projetos')}>Projetos</Button>
@@ -675,7 +714,7 @@ export default function KanbanBoardView() {
 
       {/* KANBAN */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <Box sx={{ display: 'flex', gap: 2.5, overflowX: 'auto', flexGrow: 1, pb: 1, minHeight: 0 }}>{Object.entries(COLUMNS).map(([cid, col]) => { const list = chamadosFiltrados.filter(c => c.status === cid); return (<Droppable key={cid} droppableId={cid}>{(prov, snap) => (<Paper ref={prov.innerRef} {...prov.droppableProps} elevation={0} sx={{ width: 360, minWidth: 360, maxHeight: 'calc(100vh - 280px)', bgcolor: snap.isDraggingOver ? (isDark ? 'rgba(56, 69, 90, 0.75)' : 'rgba(205, 227, 255, 0.7)') : (isDark ? 'rgba(35, 42, 57, 0.88)' : 'rgba(255, 255, 255, 0.9)'), p: 1.5, borderRadius: 4, border: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(19,78,172,0.12)', boxShadow: isDark ? '0 12px 30px rgba(0,0,0,0.35)' : '0 16px 40px rgba(31, 74, 152, 0.12)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}><Box sx={{ mb: 1.5, px: 1, py: 1.2, borderRadius: 3, borderBottom: `3px solid ${col.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(248, 251, 255, 0.95)' }}><Box display="flex" gap={1} color={col.iconColor}>{col.icon}<Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>{col.title}</Typography></Box><Chip label={list.length} size="small"/></Box><Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5 }}>{list.map((item, idx) => (<Draggable key={item.id} draggableId={item.id.toString()} index={idx}>{(p, s) => {
+        <Box sx={{ display: 'flex', gap: 2.5, overflowX: 'auto', flexGrow: 1, pb: 1, minHeight: 0 }}>{colunasKanban.map(([cid, col]) => { const list = chamadosFiltrados.filter(c => c.status === cid); return (<Droppable key={cid} droppableId={cid}>{(prov, snap) => (<Paper ref={prov.innerRef} {...prov.droppableProps} elevation={0} sx={{ width: 360, minWidth: 360, maxHeight: 'calc(100vh - 280px)', bgcolor: snap.isDraggingOver ? (isDark ? 'rgba(56, 69, 90, 0.75)' : 'rgba(205, 227, 255, 0.7)') : (isDark ? 'rgba(35, 42, 57, 0.88)' : 'rgba(255, 255, 255, 0.9)'), p: 1.5, borderRadius: 4, border: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(19,78,172,0.12)', boxShadow: isDark ? '0 12px 30px rgba(0,0,0,0.35)' : '0 16px 40px rgba(31, 74, 152, 0.12)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}><Box sx={{ mb: 1.5, px: 1, py: 1.2, borderRadius: 3, borderBottom: `3px solid ${col.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(248, 251, 255, 0.95)' }}><Box display="flex" gap={1} color={col.iconColor}>{col.icon}<Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>{col.title}</Typography></Box><Chip label={list.length} size="small"/></Box><Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5 }}>{list.map((item, idx) => (<Draggable key={item.id} draggableId={item.id.toString()} index={idx}>{(p, s) => {
             
             // 🟢 LÓGICA DO CICLO DE 24H E PRIORIDADE VISUAL
             const horasAberto = calcularHorasAberto(item.createdAt);

@@ -10,6 +10,7 @@ import KanbanBoardView from './components/KanbanBoard';
 import DashboardView from './components/DashboardView';
 import ProjectBoard from './components/ProjectBoard';
 import ProjectDetailView from './components/ProjectDetailView';
+import ChamadosHistoryView from './components/ChamadosHistoryView';
 import LoginView from './components/LoginView'; 
 import PrivateRoute from './components/PrivateRoute'; 
 import ClientTracking from './components/ClientTracking'; 
@@ -85,6 +86,15 @@ export default function App() {
                         <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}><DashboardView /></div>
                       </PrivateRoute>
                     } 
+                  />
+
+                  <Route
+                    path="/admin/chamados/historico"
+                    element={
+                      <PrivateRoute>
+                        <div style={{ width: '100%', height: 'auto' }}><ChamadosHistoryView /></div>
+                      </PrivateRoute>
+                    }
                   />
 
                   <Route
