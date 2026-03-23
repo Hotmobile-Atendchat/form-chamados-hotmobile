@@ -12,6 +12,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import BoltIcon from '@mui/icons-material/Bolt';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import LabelIcon from '@mui/icons-material/Label'; 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import SettingsIcon from '@mui/icons-material/Settings'; 
@@ -741,13 +742,13 @@ export default function KanbanBoardView() {
             const estourado = horasAberto >= 24 && item.status !== 'FINALIZADO';
             
             return (
-            <Card ref={p.innerRef} {...p.draggableProps} {...p.dragHandleProps} onClick={() => handleAbrirChamado(item)} sx={{ mb: 1.5, cursor: 'pointer', borderLeft: `5px solid ${configVisual.color}`, borderRadius: 3, boxShadow: estourado ? '0 0 0 2px rgba(211, 47, 47, 0.3)' : (isDark ? 2 : 1), position: 'relative', transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? 4 : 3 } }}>
+            <Card ref={p.innerRef} {...p.draggableProps} onClick={() => handleAbrirChamado(item)} sx={{ mb: 1.5, cursor: 'pointer', borderLeft: `5px solid ${configVisual.color}`, borderRadius: 3, boxShadow: estourado ? '0 0 0 2px rgba(211, 47, 47, 0.3)' : (isDark ? 2 : 1), position: 'relative', transition: 'transform 0.2s ease, box-shadow 0.2s ease', '&:hover': { transform: 'translateY(-2px)', boxShadow: isDark ? 4 : 3 } }}>
                 <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                     <Typography variant="caption">#{item.id}</Typography>
                     {/* âœ… MANTIDO: Renderiza Data de CriaÃ§Ã£o */}
                     <Typography variant="caption" color="text.secondary">{new Date(item.createdAt).toLocaleDateString('pt-BR')}</Typography>
-                    {item.responsavel && <Box display="flex" gap={1} bgcolor={item.responsavelCor+'15'} p={0.5} borderRadius={1}><Avatar sx={{ width: 20, height: 20, fontSize: 10, bgcolor: item.responsavelCor }}>{item.responsavel[0]}</Avatar><Typography variant="caption" color={item.responsavelCor}>{item.responsavel}</Typography></Box>}
+                    {item.responsavel && <Box display="flex" gap={1} bgcolor={item.responsavelCor+'15'} p={0.5} borderRadius={1}><Avatar sx={{ width: 20, height: 20, fontSize: 10, bgcolor: item.responsavelCor }}>{item.responsavel[0]}</Avatar><Typography variant="caption" color={item.responsavelCor}>{item.responsavel}</Typography></Box>}<Box {...p.dragHandleProps} onClick={(e) => e.stopPropagation()} title="Arrastar" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', ml: 0.5, cursor: 'grab' }}><DragIndicatorIcon fontSize="small" /></Box>
                 </Box>
                 <Typography variant="subtitle1" fontWeight="bold">{item.nomeEmpresa}</Typography>
 
@@ -1132,6 +1133,7 @@ export default function KanbanBoardView() {
     </Box>
   );
 }
+
 
 
 
