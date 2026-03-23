@@ -685,17 +685,17 @@ export default function KanbanBoardView() {
         </Box>
 
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'flex-end', overflowX: 'auto' }}>
-          <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<LinkIcon />} onClick={() => setModalLinksOpen(true)}>Links Úteis</Button>
+          <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<LinkIcon />} onClick={() => setModalLinksOpen(true)}>Links</Button>
           <Button size="small" sx={navButtonSx} variant="outlined" color="secondary" startIcon={<HistoryIcon />} onClick={() => navigate('/admin/chamados/historico')}>Histórico</Button>
           {ocultarFinalizados ? (
-            <Button size="small" sx={navButtonSx} variant="outlined" color="inherit" startIcon={<RestoreFromTrashIcon />} onClick={handleRestaurarFinalizadosKanban}>Restaurar Finalizados</Button>
+            <Button size="small" sx={navButtonSx} variant="outlined" color="inherit" startIcon={<RestoreFromTrashIcon />} onClick={handleRestaurarFinalizadosKanban}>Restaurar</Button>
           ) : (
-            <Button size="small" sx={navButtonSx} variant="outlined" color="warning" startIcon={<AutoDeleteIcon />} onClick={handleLimparFinalizadosKanban}>Limpar Finalizados</Button>
+            <Button size="small" sx={navButtonSx} variant="outlined" color="warning" startIcon={<AutoDeleteIcon />} onClick={handleLimparFinalizadosKanban}>Limpar</Button>
           )}
           <Button size="small" sx={navButtonSx} variant={mostrarFiltros ? "contained" : "outlined"} onClick={() => setMostrarFiltros(!mostrarFiltros)} startIcon={<FilterListIcon />}>Filtros</Button>
           <Button size="small" sx={navButtonSx} variant="contained" color="secondary" startIcon={<BarChartIcon />} onClick={() => navigate('/dashboard')}>Relatórios</Button>
           <Button size="small" sx={navButtonSx} variant="contained" color="primary" startIcon={<ListAlt />} onClick={() => navigate('/admin/projetos')}>Projetos</Button>
-          <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<AccountCircleIcon />} onClick={() => setModalPerfilOpen(true)}>Minha Conta</Button>
+          <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<AccountCircleIcon />} onClick={() => setModalPerfilOpen(true)}>Conta</Button>
           <Button size="small" sx={{ ...navButtonSx, fontWeight: 700 }} variant="outlined" color="error" startIcon={<LogoutIcon />} onClick={handleLogout}>Sair</Button>
           <Box sx={{ display: 'flex', alignItems: 'center' }}><ToggleThemeButton /></Box>
         </Box>
