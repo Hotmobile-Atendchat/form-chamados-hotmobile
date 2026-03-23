@@ -93,9 +93,9 @@ const COLUMNS = {
 // --- CONFIGURAÃ‡ÃƒO DE SLA / PRIORIDADE ---
 const PRIORITY_CONFIG = {
   BAIXA:   { label: 'Baixa',   color: '#4CAF50', icon: <LowPriorityIcon fontSize="small"/> }, 
-  MEDIA:   { label: 'MÃ©dia',   color: '#2196F3', icon: <LowPriorityIcon fontSize="small"/> }, 
+  MEDIA:   { label: 'Média',   color: '#2196F3', icon: <LowPriorityIcon fontSize="small"/> }, 
   ALTA:    { label: 'Alta',    color: '#FF9800', icon: <PriorityHighIcon fontSize="small"/> }, 
-  CRITICA: { label: 'CrÃ­tica', color: '#F44336', icon: <PriorityHighIcon fontSize="small"/> }  
+  CRITICA: { label: 'Crítica', color: '#F44336', icon: <PriorityHighIcon fontSize="small"/> }  
 };
 
 const TAG_COLORS = [
@@ -117,8 +117,8 @@ const SUPORTE_LINKS = [
   { title: 'Formulario de Chamados suporte', url: 'https://form-chamados-hotmobile.vercel.app/', icon: <ListAlt />, color:  '#9c27b0'}, 
   { title: 'Formulario de montagem  de bot', url: 'https://hotmobile.com.br/hot360/monte-seu-bot/', icon: <ListAlt />, color:  '#9c27b0'}, 
   { title: 'Formulario de montagem  de IA', url: 'https://hotmobile.com.br/hot360/monte-sua-ia/', icon: <ListAlt />, color:  '#9c27b0'}, 
-  { title: 'DocumentaÃ§Ã£o Hot Api', url: 'https://api.hotmobile.com.br/index.html', icon: <BookIcon />, color: '#e65100' },
-  { title: 'AtualizaÃ§Ãµes Atendchat', url: 'https://changelog.atendchat.app.br/', icon: <BookIcon />, color: '#e65100' },
+  { title: 'Documentação Hot Api', url: 'https://api.hotmobile.com.br/index.html', icon: <BookIcon />, color: '#e65100' },
+  { title: 'Atualizações Atendchat', url: 'https://changelog.atendchat.app.br/', icon: <BookIcon />, color: '#e65100' },
   { title: 'Painel Hot', url: 'https://painel.hotmobile.com.br/a/', icon: <DnsIcon />, color: '#2e7d32' },
   { title: 'Site Institucional', url: 'https://hotmobile.com.br', icon: <PublicIcon />, color: '#555' }
 ];
@@ -204,7 +204,7 @@ export default function KanbanBoardView() {
 
   const handleLogout = () => {
     logout(); 
-    toast.info('VocÃª saiu do sistema.');
+    toast.info('Você saiu do sistema.');
     navigate('/login');
   };
 
@@ -323,7 +323,7 @@ export default function KanbanBoardView() {
                   setChamados(prev => prev.map(c => c.id === chamadoSelecionado.id ? { ...c, tags: novasTags } : c));
               }
           }
-          toast.success("Tag excluÃ­da!");
+          toast.success("Tag excluída!");
       } catch (error) {
           toast.error("Erro ao excluir tag.");
       }
@@ -338,7 +338,7 @@ export default function KanbanBoardView() {
   };
 
   const handleCriarMacro = async () => {
-    if (!novaMacro.titulo || !novaMacro.texto) return toast.warning("Preencha tÃ­tulo e texto!");
+    if (!novaMacro.titulo || !novaMacro.texto) return toast.warning("Preencha título e texto!");
     try {
       await api.post(`${API_URL}/respostas-prontas`, novaMacro);
       toast.success("Resposta salva!");
@@ -380,9 +380,9 @@ export default function KanbanBoardView() {
         setChamadoSelecionado(prev => ({ ...prev, responsavel: nome, responsavelCor: cor }));
         setChamados(prev => prev.map(c => c.id === chamadoSelecionado.id ? { ...c, responsavel: nome, responsavelCor: cor } : c));
         await api.patch(`${API_URL}/chamados/${chamadoSelecionado.id}/responsavel`, { responsavel: nome, responsavelCor: cor });
-        toast.success(`ResponsÃ¡vel alterado para ${nome || 'NinguÃ©m'}`);
+        toast.success(`Responsável alterado para ${nome || 'Ninguém'}`);
     } catch (error) {
-        toast.error("Erro ao alterar responsÃ¡vel.");
+        toast.error("Erro ao alterar responsável.");
         console.error(error);
     }
   };
@@ -454,7 +454,7 @@ export default function KanbanBoardView() {
     try {
       await api.delete(`${API_URL}/chamados/${chamadoSelecionado.id}`);
       setChamados((prev) => prev.filter(c => c.id !== chamadoSelecionado.id));
-      toast.success('Chamado excluÃ­do com sucesso.');
+      toast.success('Chamado excluído com sucesso.');
       setConfirmDeleteOpen(false);
       setChamadoSelecionado(null);
     } catch (error) {
@@ -677,27 +677,27 @@ export default function KanbanBoardView() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary' }}>
-            OperaÃ§Ã£o de Chamados
+            Operação de Chamados
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Painel de atendimento com filtros, SLA e distribuiÃ§Ã£o por responsavel.
+            Painel de atendimento com filtros, SLA e distribuição por responsável.
           </Typography>
         </Box>
 
-        <Box display="flex" gap={1} flexWrap="wrap" justifyContent="flex-end">
-          <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<LinkIcon />} onClick={() => setModalLinksOpen(true)}>Links Ãšteis</Button>
-          <Button size="small" sx={navButtonSx} variant="outlined" color="secondary" startIcon={<HistoryIcon />} onClick={() => navigate('/admin/chamados/historico')}>Historico</Button>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'flex-end', overflowX: 'auto' }}>
+          <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<LinkIcon />} onClick={() => setModalLinksOpen(true)}>Links Úteis</Button>
+          <Button size="small" sx={navButtonSx} variant="outlined" color="secondary" startIcon={<HistoryIcon />} onClick={() => navigate('/admin/chamados/historico')}>Histórico</Button>
           {ocultarFinalizados ? (
             <Button size="small" sx={navButtonSx} variant="outlined" color="inherit" startIcon={<RestoreFromTrashIcon />} onClick={handleRestaurarFinalizadosKanban}>Restaurar Finalizados</Button>
           ) : (
             <Button size="small" sx={navButtonSx} variant="outlined" color="warning" startIcon={<AutoDeleteIcon />} onClick={handleLimparFinalizadosKanban}>Limpar Finalizados</Button>
           )}
           <Button size="small" sx={navButtonSx} variant={mostrarFiltros ? "contained" : "outlined"} onClick={() => setMostrarFiltros(!mostrarFiltros)} startIcon={<FilterListIcon />}>Filtros</Button>
-          <Button size="small" sx={navButtonSx} variant="contained" color="secondary" startIcon={<BarChartIcon />} onClick={() => navigate('/dashboard')}>RelatÃ³rios</Button>
+          <Button size="small" sx={navButtonSx} variant="contained" color="secondary" startIcon={<BarChartIcon />} onClick={() => navigate('/dashboard')}>Relatórios</Button>
           <Button size="small" sx={navButtonSx} variant="contained" color="primary" startIcon={<ListAlt />} onClick={() => navigate('/admin/projetos')}>Projetos</Button>
           <Button size="small" sx={navButtonSx} variant="outlined" color="primary" startIcon={<AccountCircleIcon />} onClick={() => setModalPerfilOpen(true)}>Minha Conta</Button>
           <Button size="small" sx={{ ...navButtonSx, fontWeight: 700 }} variant="outlined" color="error" startIcon={<LogoutIcon />} onClick={handleLogout}>Sair</Button>
-          <ToggleThemeButton />
+          <Box sx={{ display: 'flex', alignItems: 'center' }}><ToggleThemeButton /></Box>
         </Box>
       </Box>
       </Paper>
@@ -708,10 +708,10 @@ export default function KanbanBoardView() {
             <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} md={3}><TextField fullWidth variant="outlined" placeholder="Buscar..." size="small" value={busca} onChange={(e) => setBusca(e.target.value)} InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>) }} /></Grid>
                 <Grid item xs={12} md={2}><FormControl size="small" fullWidth><InputLabel>Status</InputLabel><Select multiple value={filtroStatus} label="Status" onChange={(e) => { const value = e.target.value; setFiltroStatus(typeof value === 'string' ? value.split(',') : value); }} renderValue={(selected) => selected.map(val => COLUMNS[val].title.split(' ')[1]).join(', ')}>{Object.entries(COLUMNS).map(([key, col]) => (<MenuItem key={key} value={key}><Checkbox checked={filtroStatus.indexOf(key) > -1} /><MuiListItemText primary={col.title} /></MenuItem>))}</Select></FormControl></Grid>
-                <Grid item xs={12} md={2}><FormControl size="small" fullWidth><InputLabel>ResponsÃ¡vel</InputLabel><Select multiple value={filtroResponsavel} label="ResponsÃ¡vel" onChange={(e) => { const value = e.target.value; setFiltroResponsavel(typeof value === 'string' ? value.split(',') : value); }} renderValue={(selected) => selected.join(', ')}>{responsaveisUnicos.map((resp) => (<MenuItem key={resp} value={resp}><Checkbox checked={filtroResponsavel.indexOf(resp) > -1} /><MuiListItemText primary={resp} /></MenuItem>))}</Select></FormControl></Grid>
+                <Grid item xs={12} md={2}><FormControl size="small" fullWidth><InputLabel>Responsável</InputLabel><Select multiple value={filtroResponsavel} label="Responsável" onChange={(e) => { const value = e.target.value; setFiltroResponsavel(typeof value === 'string' ? value.split(',') : value); }} renderValue={(selected) => selected.join(', ')}>{responsaveisUnicos.map((resp) => (<MenuItem key={resp} value={resp}><Checkbox checked={filtroResponsavel.indexOf(resp) > -1} /><MuiListItemText primary={resp} /></MenuItem>))}</Select></FormControl></Grid>
                 <Grid item xs={12} md={2}><FormControl size="small" fullWidth><InputLabel>Tags</InputLabel><Select multiple value={filtroTags} label="Tags" onChange={(e) => { const value = e.target.value; setFiltroTags(typeof value === 'string' ? value.split(',') : value); }} renderValue={(selected) => selected.join(', ')}>{todasTags.map((tag) => (<MenuItem key={tag.id} value={tag.nome}><Checkbox checked={filtroTags.indexOf(tag.nome) > -1} /><Chip label={tag.nome} size="small" sx={{ bgcolor: tag.cor, color: '#fff', height: 20, fontSize: '0.65rem' }} /></MenuItem>))}</Select></FormControl></Grid>
                 <Grid item xs={6} md={1.5}><TextField fullWidth label="De" type="date" size="small" InputLabelProps={{ shrink: true }} value={filtroDataInicio} onChange={(e) => setFiltroDataInicio(e.target.value)} /></Grid>
-                <Grid item xs={6} md={1.5} display="flex" alignItems="center" justifyContent="space-between"><FormControlLabel control={<Switch checked={apenasNaoLidos} onChange={(e) => setApenasNaoLidos(e.target.checked)} color="success" />} label={<Typography variant="caption" fontWeight="bold">Nao lidos</Typography>} /><IconButton onClick={limparFiltros} title="Limpar Filtros" size="small"><ClearIcon /></IconButton></Grid>
+                <Grid item xs={6} md={1.5} display="flex" alignItems="center" justifyContent="space-between"><FormControlLabel control={<Switch checked={apenasNaoLidos} onChange={(e) => setApenasNaoLidos(e.target.checked)} color="success" />} label={<Typography variant="caption" fontWeight="bold">Não lidos</Typography>} /><IconButton onClick={limparFiltros} title="Limpar Filtros" size="small"><ClearIcon /></IconButton></Grid>
             </Grid>
         </Paper>
       )}
@@ -732,7 +732,7 @@ export default function KanbanBoardView() {
             }
 
             // Se a prioridade manual for MAIOR que a calculada, respeita a manual, senÃ£o usa a calculada
-            // (Isso garante que o sistema "empurre" a prioridade pra cima, mas nÃ£o baixe se alguÃ©m definiu como CrÃ­tica)
+            // (Isso garante que o sistema "empurre" a prioridade pra cima, mas nÃ£o baixe se alguÃ©m definiu como Crítica)
             const prioridadeFinal = (PRIORITY_CONFIG[item.prioridade] && Object.keys(PRIORITY_CONFIG).indexOf(item.prioridade) > Object.keys(PRIORITY_CONFIG).indexOf(slaPriorityVisual)) 
                                     ? item.prioridade 
                                     : slaPriorityVisual;
@@ -818,7 +818,7 @@ export default function KanbanBoardView() {
             <DialogContent dividers>
               <Grid container spacing={2} sx={{ height: '100%' }}>
                 <Grid item xs={12} md={8} display="flex" flexDirection="column">
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>HistÃ³rico do Chamado</Typography>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>Histórico do Chamado</Typography>
                   <Box sx={{ flexGrow: 1, bgcolor: isDark ? 'rgba(0,0,0,0.2)' : '#f9f9f9', borderRadius: 2, p: 2, mb: 2, border: '1px solid', borderColor: 'divider', maxHeight: '400px', overflowY: 'auto'}}>
                     
                     {/* âœ… ABERTURA: COM ANEXOS E ÃUDIO */}
@@ -866,7 +866,7 @@ export default function KanbanBoardView() {
                     {chamadoSelecionado.interacoes?.map((interacao, idx) => {
                       const isSuporte = interacao.autor === 'SUPORTE';
                       const isInterno = interacao.interno; 
-                      return (<Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: isSuporte ? 'flex-end' : 'flex-start', mb: 2 }}><Box display="flex" alignItems="center" gap={1} mb={0.5} flexDirection={isSuporte ? 'row-reverse' : 'row'}> <Avatar sx={{ width: 24, height: 24, bgcolor: isSuporte ? '#1976d2' : '#9e9e9e' }}>{isSuporte ? <SupportAgentIcon fontSize="small" /> : <PersonIcon fontSize="small" />}</Avatar><Typography variant="caption" fontWeight="bold">{isSuporte ? 'Suporte' : 'Cliente'}</Typography><Typography variant="caption" color="text.secondary">{new Date(interacao.createdAt).toLocaleString()}</Typography></Box><Paper elevation={0} sx={{ p: 2, bgcolor: isInterno ? (isDark ? 'rgba(237, 108, 2, 0.15)' : '#FFF3E0') : (isSuporte ? (isDark ? 'rgba(25, 118, 210, 0.15)' : '#E3F2FD') : 'background.paper'), border: isInterno ? '1px dashed #FF9800' : (isSuporte ? 'none' : '1px solid'), borderColor: 'divider', borderRadius: isSuporte ? '12px 0 12px 12px' : '0 12px 12px 12px', maxWidth: '90%', color: 'text.primary'}}>{isInterno && (<Box display="flex" alignItems="center" gap={0.5} mb={0.5} color="warning.main"><LockIcon style={{ fontSize: 14 }} /><Typography variant="caption" fontWeight="bold">NOTA INTERNA (Cliente nÃ£o vÃª)</Typography></Box>)}<Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>{interacao.texto}</Typography>
+                      return (<Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: isSuporte ? 'flex-end' : 'flex-start', mb: 2 }}><Box display="flex" alignItems="center" gap={1} mb={0.5} flexDirection={isSuporte ? 'row-reverse' : 'row'}> <Avatar sx={{ width: 24, height: 24, bgcolor: isSuporte ? '#1976d2' : '#9e9e9e' }}>{isSuporte ? <SupportAgentIcon fontSize="small" /> : <PersonIcon fontSize="small" />}</Avatar><Typography variant="caption" fontWeight="bold">{isSuporte ? 'Suporte' : 'Cliente'}</Typography><Typography variant="caption" color="text.secondary">{new Date(interacao.createdAt).toLocaleString()}</Typography></Box><Paper elevation={0} sx={{ p: 2, bgcolor: isInterno ? (isDark ? 'rgba(237, 108, 2, 0.15)' : '#FFF3E0') : (isSuporte ? (isDark ? 'rgba(25, 118, 210, 0.15)' : '#E3F2FD') : 'background.paper'), border: isInterno ? '1px dashed #FF9800' : (isSuporte ? 'none' : '1px solid'), borderColor: 'divider', borderRadius: isSuporte ? '12px 0 12px 12px' : '0 12px 12px 12px', maxWidth: '90%', color: 'text.primary'}}>{isInterno && (<Box display="flex" alignItems="center" gap={0.5} mb={0.5} color="warning.main"><LockIcon style={{ fontSize: 14 }} /><Typography variant="caption" fontWeight="bold">NOTA INTERNA (Cliente não vê)</Typography></Box>)}<Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>{interacao.texto}</Typography>
                       
                       {/* ðŸ”¥ EXIBIÃ‡ÃƒO DE ANEXOS DAS INTERAÃ‡Ã•ES */}
                       {interacao.anexos && interacao.anexos.length > 0 && (<Box mt={1} pt={1} borderTop="1px solid rgba(0,0,0,0.1)">{interacao.anexos.map(anexo => {
@@ -919,7 +919,7 @@ export default function KanbanBoardView() {
                     {/* âœ… BLOCO DE ATRIBUIÃ‡ÃƒO */}
                     <Box mb={3}>
                         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                            AtribuÃ­do a
+                            Atribuído a
                         </Typography>
                         <Autocomplete
                             options={equipe}
@@ -942,7 +942,7 @@ export default function KanbanBoardView() {
                                     {...params} 
                                     variant="outlined" 
                                     size="small" 
-                                    placeholder="Selecionar responsÃ¡vel..."
+                                    placeholder="Selecionar responsável..."
                                     InputProps={{
                                         ...params.InputProps,
                                         startAdornment: chamadoSelecionado.responsavel && (
@@ -956,7 +956,7 @@ export default function KanbanBoardView() {
                                                     fontSize: 12
                                                 }}
                                             >
-                                                {chamadoSelecionado.responsavel.charAt(0).toUpperCase()}
+                                                {chamadoSelecionado.responsável.charAt(0).toUpperCase()}
                                             </Avatar>
                                         )
                                     }}
@@ -965,8 +965,8 @@ export default function KanbanBoardView() {
                         />
                     </Box>
 
-                    <Box mb={3}><Typography variant="subtitle2" color="text.secondary" gutterBottom>NÃ­vel de UrgÃªncia (SLA)</Typography><FormControl fullWidth size="small"><Select value={chamadoSelecionado.prioridade || 'BAIXA'} onChange={(e) => handleChangePriority(e.target.value)} sx={{ color: PRIORITY_CONFIG[chamadoSelecionado.prioridade || 'BAIXA'].color, fontWeight: 'bold', '& .MuiOutlinedInput-notchedOutline': { borderColor: PRIORITY_CONFIG[chamadoSelecionado.prioridade || 'BAIXA'].color } }}>{Object.entries(PRIORITY_CONFIG).map(([key, config]) => (<MenuItem key={key} value={key} sx={{ color: config.color, fontWeight: 'bold' }}><Box display="flex" alignItems="center" gap={1}>{config.icon} {config.label}</Box></MenuItem>))}</Select></FormControl></Box>
-                    <Box mb={3}><Box display="flex" justifyContent="space-between" alignItems="center"><Typography variant="subtitle2" color="text.secondary" gutterBottom>Etiquetas (Tags)</Typography><IconButton size="small" onClick={() => setModalGerenciarTagsOpen(true)} title="Gerenciar Etiquetas"><SettingsIcon fontSize="small" /></IconButton></Box><Autocomplete multiple options={todasTags} getOptionLabel={(option) => option.nome} value={chamadoSelecionado.tags || []} onChange={(event, newValue) => { handleSalvarTags(newValue); }} renderInput={(params) => (<TextField {...params} variant="outlined" size="small" placeholder="Adicionar tags..." onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value) { const valor = e.target.value; const existe = todasTags.find(t => t.nome.toLowerCase() === valor.toLowerCase()); if (!existe) { e.preventDefault(); handleInitiateCriarTag(valor); } } }} />)} renderTags={(value, getTagProps) => value.map((option, index) => (<Chip label={option.nome} size="small" {...getTagProps({ index })} sx={{ bgcolor: option.cor, color: '#fff', fontWeight: 'bold' }} />))} noOptionsText="Digite e dÃª Enter para criar..." /></Box>
+                    <Box mb={3}><Typography variant="subtitle2" color="text.secondary" gutterBottom>Nível de Urgência (SLA)</Typography><FormControl fullWidth size="small"><Select value={chamadoSelecionado.prioridade || 'BAIXA'} onChange={(e) => handleChangePriority(e.target.value)} sx={{ color: PRIORITY_CONFIG[chamadoSelecionado.prioridade || 'BAIXA'].color, fontWeight: 'bold', '& .MuiOutlinedInput-notchedOutline': { borderColor: PRIORITY_CONFIG[chamadoSelecionado.prioridade || 'BAIXA'].color } }}>{Object.entries(PRIORITY_CONFIG).map(([key, config]) => (<MenuItem key={key} value={key} sx={{ color: config.color, fontWeight: 'bold' }}><Box display="flex" alignItems="center" gap={1}>{config.icon} {config.label}</Box></MenuItem>))}</Select></FormControl></Box>
+                    <Box mb={3}><Box display="flex" justifyContent="space-between" alignItems="center"><Typography variant="subtitle2" color="text.secondary" gutterBottom>Etiquetas (Tags)</Typography><IconButton size="small" onClick={() => setModalGerenciarTagsOpen(true)} title="Gerenciar Etiquetas"><SettingsIcon fontSize="small" /></IconButton></Box><Autocomplete multiple options={todasTags} getOptionLabel={(option) => option.nome} value={chamadoSelecionado.tags || []} onChange={(event, newValue) => { handleSalvarTags(newValue); }} renderInput={(params) => (<TextField {...params} variant="outlined" size="small" placeholder="Adicionar tags..." onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value) { const valor = e.target.value; const existe = todasTags.find(t => t.nome.toLowerCase() === valor.toLowerCase()); if (!existe) { e.preventDefault(); handleInitiateCriarTag(valor); } } }} />)} renderTags={(value, getTagProps) => value.map((option, index) => (<Chip label={option.nome} size="small" {...getTagProps({ index })} sx={{ bgcolor: option.cor, color: '#fff', fontWeight: 'bold' }} />))} noOptionsText="Digite e dê Enter para criar..." /></Box>
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>Contatos</Typography>
                     <List dense disablePadding>{chamadoSelecionado.emails?.map((email, idx) => (<ListItem key={idx} disableGutters><ListItemIcon sx={{ minWidth: 30 }}><EmailIcon fontSize="small" /></ListItemIcon><ListItemText primary={email.endereco} /></ListItem>))}{chamadoSelecionado.telefones?.map((tel, idx) => (<ListItem key={idx} disableGutters><ListItemIcon sx={{ minWidth: 30 }}><PhoneIcon fontSize="small" /></ListItemIcon><ListItemText primary={tel.numero} secondary={<a href={`https://wa.me/55${tel.numero.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: '#25D366', fontSize: '0.8rem', fontWeight: 'bold' }}>Abrir WhatsApp</a>} /></ListItem>))}</List>
@@ -1066,7 +1066,7 @@ export default function KanbanBoardView() {
           </List>
         </Box>
       </Popover>
-      <Dialog open={modalMacrosOpen} onClose={() => setModalMacrosOpen(false)} maxWidth="sm" fullWidth><DialogTitle>Gerenciar Respostas</DialogTitle><DialogContent dividers><Box display="flex" gap={2} mb={3} alignItems="flex-start"><TextField label="TÃ­tulo" size="small" value={novaMacro.titulo} onChange={(e) => setNovaMacro({...novaMacro, titulo: e.target.value})} /><TextField label="Texto" size="small" fullWidth multiline maxRows={3} value={novaMacro.texto} onChange={(e) => setNovaMacro({...novaMacro, texto: e.target.value})} /><Button variant="contained" onClick={handleCriarMacro}>Salvar</Button></Box><List dense>{respostasProntas.map((macro) => (<ListItem key={macro.id} secondaryAction={<IconButton edge="end" color="error" onClick={() => handleDeleteMacro(macro.id)}><DeleteIcon /></IconButton>}><ListItemText primary={macro.titulo} secondary={macro.texto} /></ListItem>))}</List></DialogContent><DialogActions><Button onClick={() => setModalMacrosOpen(false)}>Fechar</Button></DialogActions></Dialog>
+      <Dialog open={modalMacrosOpen} onClose={() => setModalMacrosOpen(false)} maxWidth="sm" fullWidth><DialogTitle>Gerenciar Respostas</DialogTitle><DialogContent dividers><Box display="flex" gap={2} mb={3} alignItems="flex-start"><TextField label="Título" size="small" value={novaMacro.titulo} onChange={(e) => setNovaMacro({...novaMacro, titulo: e.target.value})} /><TextField label="Texto" size="small" fullWidth multiline maxRows={3} value={novaMacro.texto} onChange={(e) => setNovaMacro({...novaMacro, texto: e.target.value})} /><Button variant="contained" onClick={handleCriarMacro}>Salvar</Button></Box><List dense>{respostasProntas.map((macro) => (<ListItem key={macro.id} secondaryAction={<IconButton edge="end" color="error" onClick={() => handleDeleteMacro(macro.id)}><DeleteIcon /></IconButton>}><ListItemText primary={macro.titulo} secondary={macro.texto} /></ListItem>))}</List></DialogContent><DialogActions><Button onClick={() => setModalMacrosOpen(false)}>Fechar</Button></DialogActions></Dialog>
       <Dialog open={modalLinksOpen} onClose={() => setModalLinksOpen(false)} maxWidth="xs" fullWidth><DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', pb: 1 }}>Links & Ferramentas</DialogTitle><DialogContent><Stack spacing={2}>{SUPORTE_LINKS.map((link, idx) => (<Button key={idx} variant="outlined" component="a" href={link.url} target="_blank" startIcon={link.icon} sx={{ justifyContent: 'flex-start', py: 1.5, px: 3, color: link.color, borderColor: link.color, '&:hover': { backgroundColor: `${link.color}10`, borderColor: link.color } }}>{link.title}</Button>))}</Stack></DialogContent><DialogActions sx={{ justifyContent: 'center', pb: 2 }}><Button onClick={() => setModalLinksOpen(false)} color="inherit">Fechar</Button></DialogActions></Dialog>
       <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}><DialogTitle sx={{ color: '#d32f2f', display: 'flex', alignItems: 'center', gap: 1 }}><DeleteIcon /> Excluir Chamado?</DialogTitle><DialogContent><Typography>Tem certeza que deseja excluir o chamado <strong>#{chamadoSelecionado?.id}</strong>?</Typography></DialogContent><DialogActions><Button onClick={() => setConfirmDeleteOpen(false)} color="inherit">Cancelar</Button><Button onClick={handleDeleteChamado} variant="contained" color="error">Sim, Excluir</Button></DialogActions></Dialog>
 
@@ -1081,17 +1081,17 @@ export default function KanbanBoardView() {
       <Dialog open={modalSlaOpen} onClose={() => setModalSlaOpen(false)}>
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, color: metricasSla.estourados > 0 ? '#d32f2f' : '#2e7d32' }}>
             {metricasSla.estourados > 0 ? <WarningIcon /> : <CheckCircleIcon />}
-            {metricasSla.estourados > 0 ? " AtenÃ§Ã£o: SLA CrÃ­tico" : " Monitoramento de SLA"}
+            {metricasSla.estourados > 0 ? " Atenção: SLA Crítico" : " Monitoramento de SLA"}
         </DialogTitle>
         <DialogContent>
             <Typography variant="body1" gutterBottom>
-                OlÃ¡, <strong>{user?.nome || 'Admin'}</strong>.
+                Olá, <strong>{user?.nome || 'Admin'}</strong>.
             </Typography>
             
             {metricasSla.estourados > 0 ? (
                 <>
                     <Typography variant="body2" paragraph>
-                        Existem <strong>{metricasSla.estourados}</strong> chamados que excederam o ciclo de 24 horas sem conclusÃ£o.
+                        Existem <strong>{metricasSla.estourados}</strong> chamados que excederam o ciclo de 24 horas sem conclusão.
                     </Typography>
                     <Box bgcolor="background.paper" p={2} borderRadius={1} border="1px solid #ffcdd2" mb={2}>
                         <Grid container spacing={2} textAlign="center">
@@ -1108,7 +1108,7 @@ export default function KanbanBoardView() {
                 </>
             ) : (
                 <Typography variant="body2" paragraph color="success.main" fontWeight="bold">
-                    ParabÃ©ns! Todos os chamados estÃ£o dentro do prazo.
+                    Parabéns! Todos os chamados estão dentro do prazo.
                 </Typography>
             )}
 
@@ -1132,6 +1132,8 @@ export default function KanbanBoardView() {
     </Box>
   );
 }
+
+
 
 
 
