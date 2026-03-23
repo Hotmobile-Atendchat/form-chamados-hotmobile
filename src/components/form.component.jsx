@@ -383,10 +383,10 @@ export default function MultilineTextFields() {
 
             <Grid item xs={12}>
               <Typography variant="overline" sx={{ color: '#5a6b91', letterSpacing: '0.08em', fontWeight: 700 }}>
-                Escopo da solicitaÃ§Ãµes
+                Escopo da solicitações
               </Typography>
               <TextField
-                label="DescriÃ§Ã£o"
+                label="Descrição"
                 value={formData.descricao}
                 onChange={handleChange('descricao')}
                 multiline

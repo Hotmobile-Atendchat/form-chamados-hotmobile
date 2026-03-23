@@ -28,17 +28,17 @@ export default function ProjectLinksModal() {
     {
       name: 'Montagem de Bot',
       url: 'https://hotmobile.com.br/hot360/monte-seu-bot/',
-      desc: 'Monte seu bot com orientacao da equipe Hotmobile.',
+      desc: 'Monte seu bot com orientação da equipe Hotmobile.',
     },
     {
       name: 'Montagem de Agente de IA',
       url: 'https://hotmobile.com.br/hot360/monte-sua-ia/',
-      desc: 'Crie um agente de IA para apoiar seu atendimento e operacao.',
+      desc: 'Crie um agente de IA para apoiar seu atendimento e operação.',
     },
     {
-      name: 'Documentacao da API para Integracao',
+      name: 'Documentacao da API para Integração',
       url: 'https://dev.hotmobile.com.br/',
-      desc: 'Guia tecnico da API para integracoes e desenvolvimento.',
+      desc: 'Guia tecnico da API para integrações e desenvolvimento.',
     },
   ];
 

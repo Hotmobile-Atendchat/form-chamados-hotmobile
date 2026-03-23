@@ -28,7 +28,7 @@ export default function HelpPortalModal() {
     {
       name: 'Ajuda Hotmobile',
       url: 'https://ajuda.hotmobile.com.br/',
-      desc: 'Duvidas sobre o sistema de gestao',
+      desc: 'Duvidas sobre o sistema de gestão',
     },
     {
       name: 'Ajuda Atendchat',
