@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Patch, UseGuards, Req, Get } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Body, Controller, Get, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import express from 'express';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -12,39 +12,41 @@ export class AuthController {
     return this.authService.login(body.email, body.password || body.senha);
   }
 
-  // Rota para criar o primeiro usuário (depois você pode remover ou proteger)
   @Post('register')
   async register(@Body() body: any) {
     return this.authService.register(body);
   }
 
- @UseGuards(AuthGuard('jwt'))
+  @Get('verify-account')
+  async verifyAccount(@Query('token') token: string) {
+    return this.authService.verifyAccount(token);
+  }
+
+  @Post('resend-verification')
+  async resendVerification(@Body() body: { email: string }) {
+    return this.authService.resendVerification(body.email);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Patch('me')
-  // 👇 3. Use @Req() e tipei como Request
   async updateProfile(@Req() req: express.Request, @Body() body: any) {
-    
-    // 👇 O TypeScript pode reclamar que 'user' não existe em Request.
-    // Se isso acontecer, use: (req as any).user
     const user = (req as any).user;
 
     const dados = {
-        nome: body.nome,
-        email: body.email,
-        cor: body.cor,
-        senha: body.password 
+      nome: body.nome,
+      email: body.email,
+      cor: body.cor,
+      senha: body.password,
     };
 
-    const userId = user.userId || user.sub || user.id; 
+    const userId = user.userId || user.sub || user.id;
 
     return this.authService.updateProfile(userId, dados);
   }
 
-  @UseGuards(AuthGuard('jwt')) 
+  @UseGuards(AuthGuard('jwt'))
   @Get('users')
   async listUsers() {
     return this.authService.findAllForDropdown();
   }
-
-  
-
 }

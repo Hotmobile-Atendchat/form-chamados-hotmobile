@@ -15,6 +15,7 @@ import LoginView from './components/LoginView';
 import PrivateRoute from './components/PrivateRoute'; 
 import ClientTracking from './components/ClientTracking'; 
 import RegisterForm from './components/RegisterForm'; 
+import VerifyAccountView from './components/VerifyAccountView';
 
 // Componente de Layout para o Admin
 const AdminLayout = () => {
@@ -60,6 +61,7 @@ export default function App() {
               <Route path="/" element={<MultilineTextFields />} />
               <Route path="/login" element={<LoginView />} />
               <Route path="/register" element={<RegisterForm />} /> 
+              <Route path="/verify-account" element={<VerifyAccountView />} />
               
               <Route 
                 path="/acompanhamento/:id" 

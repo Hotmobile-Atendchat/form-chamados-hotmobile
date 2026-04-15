@@ -1,27 +1,28 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import api from '../services/api';
 
-
-// ✅ 1. Crie a interface User (Isso resolve o erro ts(2304))
 interface User {
   id: number;
   nome: string;
   email: string;
-  cor?: string; // Opcional, pois pode não vir sempre
-  // Adicione outros campos se o seu backend retornar (ex: avatar, role, etc)
+  cor?: string;
 }
 
-// 2. Define o formato dos dados do Contexto
+interface LoginResult {
+  success: boolean;
+  message?: string;
+  needsVerification?: boolean;
+}
+
 interface AuthContextData {
   signed: boolean;
-  user: User | null; // ✅ Mudei de 'object' para 'User'
+  user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
-// 3. Cria o contexto
 export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 interface AuthProviderProps {
@@ -29,7 +30,6 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  // ✅ Mudei de <object | null> para <User | null>
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,48 +38,61 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const storedUser = localStorage.getItem('user');
 
     if (storedToken && storedUser) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+      api.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
       setUser(JSON.parse(storedUser));
     }
-    
+
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<LoginResult> => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      
-      // Certifique-se que o backend retorna { access_token, user }
       const { access_token, user } = response.data;
 
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
-      
-      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+
+      api.defaults.headers.common.Authorization = `Bearer ${access_token}`;
       setUser(user);
-      return true;
-    } catch (error) {
-      console.error(error);
-      return false;
+
+      return { success: true };
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const code = error?.response?.data?.code;
+      const message = error?.response?.data?.message;
+
+      if (status === 403 && code === 'ACCOUNT_NOT_VERIFIED') {
+        return {
+          success: false,
+          needsVerification: true,
+          message: message || 'Conta nao verificada. Confira seu email.',
+        };
+      }
+
+      return {
+        success: false,
+        message: Array.isArray(message) ? message.join(', ') : message || 'Email ou senha invalidos.',
+      };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    delete api.defaults.headers.common['Authorization'];
+    delete api.defaults.headers.common.Authorization;
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        signed: !!user, 
-        user, 
-        login, 
-        logout, 
+    <AuthContext.Provider
+      value={{
+        signed: !!user,
+        user,
+        login,
+        logout,
         loading,
-        setUser // ✅ IMPORTANTE: Adicionei o setUser aqui para o Modal de Perfil funcionar!
+        setUser,
       }}
     >
       {children}
@@ -88,6 +101,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 };
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  return context;
+  return useContext(AuthContext);
 }

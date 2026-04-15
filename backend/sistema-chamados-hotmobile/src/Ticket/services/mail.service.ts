@@ -85,6 +85,25 @@ export class MailService implements OnModuleInit {
     return this.enviarEmailBase(emailDestino, assunto, corpoHtml);
   }
 
+  async enviarVerificacaoConta(emailDestino: string, nomeUsuario: string, linkVerificacao: string) {
+    const corpoHtml = `
+      <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+        <h2 style="color: #1976d2;">Ola, ${nomeUsuario}!</h2>
+        <p>Seu cadastro foi criado. Para ativar sua conta de suporte, confirme seu email no botao abaixo.</p>
+        <div style="margin: 25px 0;">
+          <a href="${linkVerificacao}" style="background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+            Verificar Conta
+          </a>
+        </div>
+        <p style="font-size: 12px; color: #666;">Se o botao nao funcionar, use este link: ${linkVerificacao}</p>
+        <hr>
+        <p>Atenciosamente,<br><strong>Equipe Hotmobile</strong></p>
+      </div>
+    `;
+
+    return this.enviarEmailBase(emailDestino, 'Verifique sua conta no Sistema de Chamados', corpoHtml);
+  }
+
   private async enviarEmailBase(emailDestino: string, assunto: string, html: string) {
     if (!this.mailchimp) {
       this.logger.warn(`Email nao enviado para ${emailDestino}: provedor de email nao configurado.`);

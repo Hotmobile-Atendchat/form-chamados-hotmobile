@@ -183,12 +183,15 @@ model Anexo {
 }
 
 model Usuario {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  senha     String   // Será salva criptografada (hash)
-  nome      String
-  cor       String   @default("#1976d2")
-  createdAt DateTime @default(now())
+  id                       Int       @id @default(autoincrement())
+  email                    String    @unique
+  senha                    String   // Será salva criptografada (hash)
+  nome                     String
+  cor                      String    @default("#1976d2")
+  emailVerificado          Boolean   @default(false)
+  tokenVerificacao         String?   @unique
+  tokenVerificacaoExpiraEm DateTime?
+  createdAt                DateTime  @default(now())
 
   @@map("usuarios")
 }
