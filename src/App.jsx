@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext'
 import ThemeProviderContext from './contexts/ThemeProviderContext';
 import MultilineTextFields from './components/form.component';
@@ -61,6 +61,8 @@ export default function App() {
               <Route path="/" element={<MultilineTextFields />} />
               <Route path="/login" element={<LoginView />} />
               <Route path="/register" element={<RegisterForm />} /> 
+              <Route path="/cadastro" element={<RegisterForm />} />
+              <Route path="/cadastro-usuarios" element={<RegisterForm />} />
               <Route path="/verify-account" element={<VerifyAccountView />} />
               
               <Route 
@@ -118,6 +120,7 @@ export default function App() {
                   />
 
               </Route>
+              <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </BrowserRouter>
         
