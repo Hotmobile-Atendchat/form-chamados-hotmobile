@@ -20,6 +20,18 @@ const STATUS_LABELS: Record<string, string> = {
   FINALIZADO: 'Finalizado',
 };
 
+const STATUS_SPRINT_LABELS: Record<string, string> = {
+  PLANEJADA: 'Planejada',
+  ATIVA: 'Ativa',
+  CONCLUIDA: 'Concluida',
+};
+
+const STATUS_TAREFA_LABELS: Record<string, string> = {
+  PENDENTE: 'Pendente',
+  EM_ANDAMENTO: 'Em andamento',
+  CONCLUIDA: 'Concluida',
+};
+
 @Injectable()
 export class ProjetosService {
   constructor(
@@ -34,6 +46,68 @@ export class ProjetosService {
     sprints: { orderBy: { dataInicio: 'asc' as const } },
     tarefas: { include: { sprintRef: true }, orderBy: { createdAt: 'desc' as const } },
   };
+
+  private formatDate(date: Date | string | null | undefined) {
+    if (!date) return '-';
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('pt-BR');
+  }
+
+  private buildPrazoProjetoResumo(sprints: Array<{ nome: string; status: string; dataInicio: Date; dataFim: Date }>) {
+    if (!sprints?.length) {
+      return 'Prazo: projeto ainda sem sprint definida.';
+    }
+
+    const sprintAtiva = sprints.find((s) => s.status === 'ATIVA');
+    if (sprintAtiva) {
+      return `Prazo da sprint ativa "${sprintAtiva.nome}": ${this.formatDate(sprintAtiva.dataInicio)} ate ${this.formatDate(sprintAtiva.dataFim)}.`;
+    }
+
+    const proximaSprint = sprints.find((s) => s.status !== 'CONCLUIDA');
+    if (proximaSprint) {
+      return `Proximo prazo da sprint "${proximaSprint.nome}": ${this.formatDate(proximaSprint.dataInicio)} ate ${this.formatDate(proximaSprint.dataFim)}.`;
+    }
+
+    const ultimaSprint = sprints[sprints.length - 1];
+    return `Ultimo prazo registrado: sprint "${ultimaSprint.nome}" (${this.formatDate(ultimaSprint.dataInicio)} ate ${this.formatDate(ultimaSprint.dataFim)}).`;
+  }
+
+  private async notifyProjetoContatos(
+    projeto: {
+      id: number;
+      emails?: string[] | null;
+      telefones?: string[] | null;
+    },
+    assuntoEmail: string,
+    mensagem: string,
+    linkAcao?: string,
+  ) {
+    const envios: Promise<unknown>[] = [];
+    const mensagemWhatsapp = `${mensagem}\n\nEquipe Hotmobile`;
+
+    if (projeto.telefones?.length) {
+      projeto.telefones.forEach((tel) => {
+        envios.push(this.whatsappService.enviarMensagem(tel, mensagemWhatsapp).catch(() => null));
+      });
+    }
+
+    if (projeto.emails?.length) {
+      projeto.emails.forEach((email) => {
+        envios.push(
+          this.mailService.enviarNotificacaoGenerica(email, assuntoEmail, mensagem, linkAcao).catch(() => null),
+        );
+      });
+    }
+
+    if (envios.length > 0) {
+      await Promise.allSettled(envios);
+    }
+  }
+
+  private getProjetoLink() {
+    return `${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/projetos`;
+  }
 
   async create(data: CreateProjetoDto, files: Array<Express.Multer.File>) {
     let anexosData: any[] = [];
@@ -105,25 +179,15 @@ export class ProjetosService {
 
     if (dto.status) {
       const etapa = STATUS_LABELS[dto.status] || dto.status;
-      const msg = `Seu projeto #${projetoAtualizado.id} avancou para a etapa: ${etapa}.`;
+      const prazoResumo = this.buildPrazoProjetoResumo(projetoAtualizado.sprints || []);
+      const msg = `Transparencia de andamento: o projeto #${projetoAtualizado.id} avancou para a etapa "${etapa}". ${prazoResumo}`;
 
-      if (projetoAtualizado.telefones?.length > 0) {
-        projetoAtualizado.telefones.forEach((tel: string) => {
-          this.whatsappService.enviarMensagem(tel, msg).catch(() => {});
-        });
-      }
-
-      if (projetoAtualizado.emails?.length > 0) {
-        projetoAtualizado.emails.forEach((email: string) => {
-          this.mailService
-            .enviarNotificacaoGenerica(
-              email,
-              `Atualizacao do Projeto #${projetoAtualizado.id}`,
-              msg,
-            )
-            .catch(() => {});
-        });
-      }
+      await this.notifyProjetoContatos(
+        projetoAtualizado,
+        `Projeto #${projetoAtualizado.id}: etapa atualizada`,
+        msg,
+        this.getProjetoLink(),
+      );
     }
 
     if (dto.status) {
@@ -134,7 +198,16 @@ export class ProjetosService {
   }
 
   async createTask(projetoId: number, dto: CreateProjetoTarefaDto, userId?: number) {
-    await this.prisma.projeto.findUniqueOrThrow({ where: { id: projetoId } });
+    const projeto = await this.prisma.projeto.findUniqueOrThrow({
+      where: { id: projetoId },
+      select: {
+        id: true,
+        nomeProjeto: true,
+        emails: true,
+        telefones: true,
+      },
+    });
+
     if (dto.sprintId) {
       await this.prisma.projetoSprint.findFirstOrThrow({
         where: { id: dto.sprintId, projetoId },
@@ -158,15 +231,28 @@ export class ProjetosService {
         responsavel: dto.responsavel,
         responsavelCor: dto.responsavelCor,
       },
+      include: { sprintRef: true },
     });
+
+    const prazoTarefa = tarefa.sprintRef
+      ? `Prazo da sprint "${tarefa.sprintRef.nome}": ${this.formatDate(tarefa.sprintRef.dataInicio)} ate ${this.formatDate(tarefa.sprintRef.dataFim)}.`
+      : 'Prazo: tarefa ainda sem sprint vinculada.';
+
+    const msg = `Nova tarefa registrada no projeto #${projeto.id} (${projeto.nomeProjeto}): "${tarefa.titulo}". ${prazoTarefa} Seguimos atualizando cada movimentacao para manter total transparencia.`;
+    await this.notifyProjetoContatos(
+      projeto,
+      `Projeto #${projeto.id}: nova tarefa criada`,
+      msg,
+      this.getProjetoLink(),
+    );
 
     return tarefa;
   }
 
   async updateTask(projetoId: number, taskId: number, dto: UpdateProjetoTarefaDto) {
-    const tarefa = await this.prisma.projetoTarefa.findFirstOrThrow({
+    const tarefaAnterior = await this.prisma.projetoTarefa.findFirstOrThrow({
       where: { id: taskId, projetoId },
-      select: { id: true },
+      select: { id: true, status: true, titulo: true },
     });
 
     if (dto.sprintId && dto.sprintId > 0) {
@@ -175,8 +261,8 @@ export class ProjetosService {
       });
     }
 
-    return this.prisma.projetoTarefa.update({
-      where: { id: tarefa.id },
+    const tarefaAtualizada = await this.prisma.projetoTarefa.update({
+      where: { id: tarefaAnterior.id },
       data: {
         ...(dto.titulo !== undefined && { titulo: dto.titulo }),
         ...(dto.descricao !== undefined && { descricao: dto.descricao }),
@@ -185,7 +271,41 @@ export class ProjetosService {
         ...(dto.responsavel !== undefined && { responsavel: dto.responsavel }),
         ...(dto.responsavelCor !== undefined && { responsavelCor: dto.responsavelCor }),
       },
+      include: { sprintRef: true },
     });
+
+    const finalizouAgora =
+      dto.status === 'CONCLUIDA' &&
+      tarefaAnterior.status !== 'CONCLUIDA' &&
+      tarefaAtualizada.status === 'CONCLUIDA';
+
+    if (finalizouAgora) {
+      const projeto = await this.prisma.projeto.findUniqueOrThrow({
+        where: { id: projetoId },
+        select: {
+          id: true,
+          nomeProjeto: true,
+          emails: true,
+          telefones: true,
+        },
+      });
+
+      const prazoTarefa = tarefaAtualizada.sprintRef
+        ? `Prazo da sprint: ${this.formatDate(tarefaAtualizada.sprintRef.dataInicio)} ate ${this.formatDate(tarefaAtualizada.sprintRef.dataFim)}.`
+        : 'Prazo: tarefa sem sprint vinculada.';
+
+      const statusLabel = STATUS_TAREFA_LABELS[tarefaAtualizada.status] || tarefaAtualizada.status;
+      const msg = `Tarefa concluida no projeto #${projeto.id} (${projeto.nomeProjeto}): "${tarefaAtualizada.titulo}". Status atual: ${statusLabel}. ${prazoTarefa}`;
+
+      await this.notifyProjetoContatos(
+        projeto,
+        `Projeto #${projeto.id}: tarefa finalizada`,
+        msg,
+        this.getProjetoLink(),
+      );
+    }
+
+    return tarefaAtualizada;
   }
 
   async deleteTask(projetoId: number, taskId: number) {
@@ -200,8 +320,17 @@ export class ProjetosService {
   }
 
   async createSprint(projetoId: number, dto: CreateProjetoSprintDto) {
-    await this.prisma.projeto.findUniqueOrThrow({ where: { id: projetoId } });
-    return this.prisma.projetoSprint.create({
+    const projeto = await this.prisma.projeto.findUniqueOrThrow({
+      where: { id: projetoId },
+      select: {
+        id: true,
+        nomeProjeto: true,
+        emails: true,
+        telefones: true,
+      },
+    });
+
+    const sprint = await this.prisma.projetoSprint.create({
       data: {
         projetoId,
         nome: dto.nome,
@@ -209,16 +338,28 @@ export class ProjetosService {
         dataFim: new Date(dto.dataFim),
       },
     });
+
+    const statusLabel = STATUS_SPRINT_LABELS[sprint.status] || sprint.status;
+    const msg = `Nova sprint criada no projeto #${projeto.id} (${projeto.nomeProjeto}): "${sprint.nome}". Status atual: ${statusLabel}. Prazo planejado: ${this.formatDate(sprint.dataInicio)} ate ${this.formatDate(sprint.dataFim)}.`;
+
+    await this.notifyProjetoContatos(
+      projeto,
+      `Projeto #${projeto.id}: sprint criada`,
+      msg,
+      this.getProjetoLink(),
+    );
+
+    return sprint;
   }
 
   async updateSprint(projetoId: number, sprintId: number, dto: UpdateProjetoSprintDto) {
-    const sprint = await this.prisma.projetoSprint.findFirstOrThrow({
+    const sprintAnterior = await this.prisma.projetoSprint.findFirstOrThrow({
       where: { id: sprintId, projetoId },
-      select: { id: true },
+      select: { id: true, status: true, nome: true },
     });
 
-    return this.prisma.projetoSprint.update({
-      where: { id: sprint.id },
+    const sprintAtualizada = await this.prisma.projetoSprint.update({
+      where: { id: sprintAnterior.id },
       data: {
         ...(dto.nome !== undefined && { nome: dto.nome }),
         ...(dto.dataInicio !== undefined && { dataInicio: new Date(dto.dataInicio) }),
@@ -226,6 +367,35 @@ export class ProjetosService {
         ...(dto.status !== undefined && { status: dto.status as any }),
       },
     });
+
+    const finalizouAgora =
+      dto.status === 'CONCLUIDA' &&
+      sprintAnterior.status !== 'CONCLUIDA' &&
+      sprintAtualizada.status === 'CONCLUIDA';
+
+    if (finalizouAgora) {
+      const projeto = await this.prisma.projeto.findUniqueOrThrow({
+        where: { id: projetoId },
+        select: {
+          id: true,
+          nomeProjeto: true,
+          emails: true,
+          telefones: true,
+        },
+      });
+
+      const statusLabel = STATUS_SPRINT_LABELS[sprintAtualizada.status] || sprintAtualizada.status;
+      const msg = `Sprint concluida no projeto #${projeto.id} (${projeto.nomeProjeto}): "${sprintAtualizada.nome}". Status atual: ${statusLabel}. Janela planejada: ${this.formatDate(sprintAtualizada.dataInicio)} ate ${this.formatDate(sprintAtualizada.dataFim)}.`;
+
+      await this.notifyProjetoContatos(
+        projeto,
+        `Projeto #${projeto.id}: sprint finalizada`,
+        msg,
+        this.getProjetoLink(),
+      );
+    }
+
+    return sprintAtualizada;
   }
 
   async deleteSprint(projetoId: number, sprintId: number) {
